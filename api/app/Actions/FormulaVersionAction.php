@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\DTOs\FormulaVersionData;
+use App\Events\FormulaVersionActivated;
 use App\Models\FormulaVersion;
 use Closure;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,10 @@ class FormulaVersionAction
             FormulaVersion::query()->whereKeyNot($formulaVersion->getKey())->update(['is_active' => false]);
             $formulaVersion->is_active = true;
             $formulaVersion->save();
+
+            DB::afterCommit(function () use ($formulaVersion) {
+                FormulaVersionActivated::dispatch($formulaVersion);
+            });
         };
 
         return $this;
