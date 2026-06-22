@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { calculationsApi } from '@/api/calculations'
+import { CALCULATION_ROUTES } from '@/routes/paths/calculationRoutes'
 
 const route = useRoute()
 const id = Number(route.params.id)
@@ -33,7 +34,7 @@ function formatCurrency(value: number) {
       <div class="border-b border-slate-200 bg-white">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div class="mb-1 flex items-center gap-2 text-sm text-slate-500">
-            <RouterLink to="/calculations" class="hover:text-blue-600">Calculations</RouterLink>
+            <RouterLink :to="CALCULATION_ROUTES.INDEX" class="hover:text-blue-600">Calculations</RouterLink>
             <span>/</span>
             <span class="font-mono">#{{ calculation.id }}</span>
           </div>

@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { storeToRefs } from 'pinia'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { contractsApi } from '@/api/contracts'
+import { useContracts, useCalculateContract } from '@/composables/queries/useContracts'
+import { useFilterStore } from '@/stores/useFilterStore'
 import type { Contract } from '@/types'
 
 document.title = 'Contracts — EnergyLogix'
 
-const search = ref('')
+const filterStore = useFilterStore()
+const { contractSearch: search } = storeToRefs(filterStore)
+
 const loadingIds = ref<Set<number>>(new Set())
 const lastCommissions = ref<Record<number, number>>({})
 const noActiveFormulaError = ref(false)
 
-const { data: contracts, isLoading } = useQuery({
-  queryKey: ['contracts'],
-  queryFn: contractsApi.list,
-})
+const { data: contracts, isLoading } = useContracts()
+const { mutateAsync: calculateContract } = useCalculateContract()
 
 const filtered = computed(() =>
   (contracts.value ?? []).filter((c: Contract) =>
@@ -27,7 +28,7 @@ async function calculate(contractId: number) {
   noActiveFormulaError.value = false
   loadingIds.value = new Set([...loadingIds.value, contractId])
   try {
-    const calc = await contractsApi.calculate(contractId)
+    const calc = await calculateContract(contractId)
     lastCommissions.value[contractId] = calc.result
   } catch (err: unknown) {
     const e = err as Error & { status?: number }

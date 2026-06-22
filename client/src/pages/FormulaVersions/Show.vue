@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { formulaVersionsApi } from '@/api/formulaVersions'
+import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 import type { SimulationResult } from '@/types'
 
 const route = useRoute()
@@ -61,7 +62,7 @@ function formatCurrency(value: number) {
     <template v-else-if="formulaVersion">
       <div class="border-b border-slate-200 bg-white">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <RouterLink to="/formula-versions" class="mb-3 inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600">
+          <RouterLink :to="FORMULA_VERSION_ROUTES.INDEX" class="mb-3 inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600">
             <svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>

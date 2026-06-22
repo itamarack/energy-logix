@@ -6,6 +6,7 @@ import Tribute from 'tributejs'
 import 'tributejs/dist/tribute.css'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { formulaVersionsApi } from '@/api/formulaVersions'
+import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 
 document.title = 'New Formula Version — EnergyLogix'
 
@@ -112,7 +113,7 @@ const { mutate: submit, isPending } = useMutation({
       expression: form.value.expression,
       variables: form.value.variables,
     }),
-  onSuccess: () => router.push('/formula-versions'),
+  onSuccess: () => router.push(FORMULA_VERSION_ROUTES.INDEX),
   onError: (err: unknown) => {
     const e = err as Error & { data?: { message?: string; errors?: Record<string, string[]> } }
     errors.value = {}
@@ -136,7 +137,7 @@ function handleSubmit() {
     <div class="border-b border-slate-200 bg-white">
       <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <RouterLink
-          to="/formula-versions"
+          :to="FORMULA_VERSION_ROUTES.INDEX"
           class="mb-3 inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600"
         >
           <svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -250,7 +251,7 @@ function handleSubmit() {
               >
                 {{ isPending ? 'Saving…' : 'Save Formula' }}
               </button>
-              <RouterLink to="/formula-versions" class="text-sm font-medium text-slate-600 hover:text-slate-900">
+              <RouterLink :to="FORMULA_VERSION_ROUTES.INDEX" class="text-sm font-medium text-slate-600 hover:text-slate-900">
                 Cancel
               </RouterLink>
             </div>

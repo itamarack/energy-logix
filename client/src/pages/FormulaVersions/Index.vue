@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { formulaVersionsApi } from '@/api/formulaVersions'
+import { useFormulaVersions, useActivateFormulaVersion } from '@/composables/queries/useFormulaVersions'
+import { useFilterStore } from '@/stores/useFilterStore'
+import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 import type { FormulaVersion } from '@/types'
 
 document.title = 'Formula Versions — EnergyLogix'
 
-const queryClient = useQueryClient()
-const search = ref('')
+const filterStore = useFilterStore()
+const { formulaSearch: search } = storeToRefs(filterStore)
 
-const { data: formulaVersions, isLoading } = useQuery({
-  queryKey: ['formula-versions'],
-  queryFn: formulaVersionsApi.list,
-})
+const { data: formulaVersions, isLoading } = useFormulaVersions()
 
 const filtered = computed(() =>
   (formulaVersions.value ?? []).filter((f: FormulaVersion) =>
@@ -21,10 +20,7 @@ const filtered = computed(() =>
   ),
 )
 
-const { mutate: activate } = useMutation({
-  mutationFn: (id: number) => formulaVersionsApi.activate(id),
-  onSuccess: () => queryClient.invalidateQueries({ queryKey: ['formula-versions'] }),
-})
+const { mutate: activate } = useActivateFormulaVersion()
 </script>
 
 <template>
@@ -39,7 +35,7 @@ const { mutate: activate } = useMutation({
             </p>
           </div>
           <RouterLink
-            to="/formula-versions/create"
+            :to="FORMULA_VERSION_ROUTES.CREATE"
             class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -91,7 +87,7 @@ const { mutate: activate } = useMutation({
             <tr v-for="fv in filtered" :key="fv.id" class="transition-colors hover:bg-slate-50">
               <td class="whitespace-nowrap px-6 py-4 font-mono text-sm font-medium text-slate-500">v{{ fv.version_number }}</td>
               <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900">
-                <RouterLink :to="`/formula-versions/${fv.id}`" class="hover:text-blue-600 hover:underline">
+                <RouterLink :to="FORMULA_VERSION_ROUTES.SHOW(fv.id)" class="hover:text-blue-600 hover:underline">
                   {{ fv.name }}
                 </RouterLink>
               </td>
@@ -110,7 +106,7 @@ const { mutate: activate } = useMutation({
               </td>
               <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
                 <div class="flex items-center justify-end gap-3">
-                  <RouterLink :to="`/formula-versions/${fv.id}`" class="font-medium text-blue-600 hover:text-blue-800">View</RouterLink>
+                  <RouterLink :to="FORMULA_VERSION_ROUTES.SHOW(fv.id)" class="font-medium text-blue-600 hover:text-blue-800">View</RouterLink>
                   <button
                     type="button"
                     :disabled="fv.is_active"
@@ -132,7 +128,7 @@ const { mutate: activate } = useMutation({
                   <p class="text-sm text-slate-500">
                     {{ search ? 'No formulas match your search.' : 'No formula versions yet.' }}
                   </p>
-                  <RouterLink v-if="!search" to="/formula-versions/create" class="text-sm font-medium text-blue-600 hover:underline">
+                  <RouterLink v-if="!search" :to="FORMULA_VERSION_ROUTES.CREATE" class="text-sm font-medium text-blue-600 hover:underline">
                     Create your first formula →
                   </RouterLink>
                 </div>

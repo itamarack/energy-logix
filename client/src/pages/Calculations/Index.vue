@@ -1,29 +1,27 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuery } from '@tanstack/vue-query'
+import { storeToRefs } from 'pinia'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { calculationsApi } from '@/api/calculations'
+import { useCalculations } from '@/composables/queries/useCalculations'
+import { useFilterStore } from '@/stores/useFilterStore'
+import { CALCULATION_ROUTES } from '@/routes/paths/calculationRoutes'
 import type { CommissionCalculation } from '@/types'
 
 document.title = 'Calculations — EnergyLogix'
 
 const router = useRouter()
-const search = ref('')
+const filterStore = useFilterStore()
+const { calculationSearch: search } = storeToRefs(filterStore)
 
-const { data: calculations, isLoading } = useQuery({
-  queryKey: ['calculations'],
-  queryFn: calculationsApi.list,
-})
+const { data: calculations, isLoading } = useCalculations()
 
 const filtered = computed(() =>
-  (calculations.value ?? []).filter((c: CommissionCalculation) => {
-    const term = search.value.toLowerCase()
-    return (
-      c.formula_version?.name?.toLowerCase().includes(term) ||
-      c.contract?.name?.toLowerCase().includes(term)
-    )
-  }),
+  (calculations.value ?? []).filter(
+    (c: CommissionCalculation) =>
+      c.contract?.name.toLowerCase().includes(search.value.toLowerCase()) ||
+      c.formula_version?.name.toLowerCase().includes(search.value.toLowerCase()),
+  ),
 )
 
 function formatCurrency(value: number) {
@@ -70,7 +68,7 @@ function formatCurrency(value: number) {
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
-            <tr v-for="calc in filtered" :key="calc.id" class="cursor-pointer transition-colors hover:bg-slate-50" @click="router.push(`/calculations/${calc.id}`)">
+            <tr v-for="calc in filtered" :key="calc.id" class="cursor-pointer transition-colors hover:bg-slate-50" @click="router.push(CALCULATION_ROUTES.SHOW(calc.id))">
               <td class="whitespace-nowrap px-6 py-4 text-sm">
                 <span class="font-medium text-slate-900">{{ calc.formula_version?.name ?? '—' }}</span>
                 <span class="ml-1.5 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-500">v{{ calc.formula_version?.version_number }}</span>
