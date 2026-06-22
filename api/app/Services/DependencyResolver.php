@@ -2,14 +2,17 @@
 
 namespace App\Services;
 
-use App\Enums\FormulaToken;
 use App\Enums\FormulaVariable;
 use App\Exceptions\CircularDependencyException;
-use App\Exceptions\ParseException;
+use Symfony\Component\ExpressionLanguage\Lexer;
+use Symfony\Component\ExpressionLanguage\Token;
+use Throwable;
 
 class DependencyResolver
 {
-    public function __construct(private readonly FormulaEvaluator $evaluator) {}
+    public function __construct(
+        private readonly Lexer $lexer
+    ) {}
 
     public function resolve(array $variables): array
     {
@@ -52,16 +55,22 @@ class DependencyResolver
     private function extractIdentifiers(string $expression): array
     {
         try {
-            $tokens = $this->evaluator->tokenise($expression);
-        } catch (ParseException) {
+            $stream = $this->lexer->tokenize($expression);
+            $tokens = [];
+            
+            while (!$stream->isEOF()) {
+                if ($stream->current->type === Token::NAME_TYPE) {
+                    $tokens[] = $stream->current->value;
+                }
+                $stream->next();
+            }
+        } catch (Throwable) {
             return [];
         }
 
         $baseVariables = FormulaVariable::values();
 
         return collect($tokens)
-            ->where('type', FormulaToken::IDENT)
-            ->pluck('value')
             ->map(fn(mixed $value): string => (string) $value)
             ->reject(fn(string $value) => in_array($value, $baseVariables, true))
             ->unique()
