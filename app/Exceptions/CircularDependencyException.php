@@ -4,10 +4,8 @@ namespace App\Exceptions;
 
 class CircularDependencyException extends \RuntimeException
 {
-    public function __construct(array $cycleMembers)
+    public function __construct(array $params)
     {
-        $names = implode(', ', $cycleMembers);
-
-        parent::__construct("Circular dependency detected among variables: {$names}");
+        parent::__construct(sprintf("Circular dependency detected among variables: %s", implode(', ', $params)));
     }
 }

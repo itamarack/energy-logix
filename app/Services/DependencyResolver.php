@@ -17,49 +17,35 @@ class DependencyResolver
             return [];
         }
 
-        $variableNames = array_map(fn (array $var): string => $var['name'], $variables);
-        $variableSet = array_flip($variableNames);
-
-        /** @var array<string, array<int, string>> $adjacency */
-        $adjacency = array_fill_keys($variableNames, []);
-
-        /** @var array<string, int> $inDegree */
-        $inDegree = array_fill_keys($variableNames, 0);
-
-        foreach ($variables as $variable) {
-            $referencedIdents = $this->extractIdentifiers($variable['expression']);
-
-            foreach ($referencedIdents as $ident) {
-                if (isset($variableSet[$ident]) && $ident !== $variable['name']) {
-                    $adjacency[$ident][] = $variable['name'];
-                    $inDegree[$variable['name']]++;
-                }
-            }
-        }
-
-        $queue = [];
-        foreach ($inDegree as $name => $degree) {
-            if ($degree === 0) {
-                $queue[] = $name;
-            }
-        }
-
+        $expressions = array_column($variables, 'expression', 'name');
         $sorted = [];
-        while ($queue !== []) {
-            $current = array_shift($queue);
-            $sorted[] = $current;
+        $visiting = [];
+        $visited = [];
 
-            foreach ($adjacency[$current] as $dependent) {
-                $inDegree[$dependent]--;
-                if ($inDegree[$dependent] === 0) {
-                    $queue[] = $dependent;
+        $visit = function (string $name) use (&$visit, &$sorted, &$visiting, &$visited, $expressions): void {
+            if (isset($visiting[$name])) {
+                throw new CircularDependencyException(array_keys($visiting));
+            }
+
+            if (isset($visited[$name])) {
+                return;
+            }
+
+            $visiting[$name] = true;
+
+            foreach ($this->extractIdentifiers($expressions[$name]) as $dep) {
+                if (isset($expressions[$dep])) {
+                    $visit($dep);
                 }
             }
-        }
 
-        if (count($sorted) < count($variables)) {
-            $cycleMembers = array_values(array_diff($variableNames, $sorted));
-            throw new CircularDependencyException($cycleMembers);
+            unset($visiting[$name]);
+            $visited[$name] = true;
+            $sorted[] = $name;
+        };
+
+        foreach (array_keys($expressions) as $name) {
+            $visit($name);
         }
 
         return $sorted;

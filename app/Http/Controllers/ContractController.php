@@ -2,23 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CommissionCalculationResource;
 use App\Http\Resources\ContractResource;
+use App\Jobs\CalculateCommission;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
-use App\Services\CommissionCalculator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 class ContractController extends Controller
 {
-    public function __construct(
-        private readonly CommissionCalculator $calculator,
-    ) {}
-
     public function index(Request $request): InertiaResponse|AnonymousResourceCollection
     {
         $contracts = Contract::all();
@@ -32,7 +27,7 @@ class ContractController extends Controller
         ]);
     }
 
-    public function calculate(Contract $contract): Response
+    public function calculate(Contract $contract): JsonResponse
     {
         $activeFormula = FormulaVersion::where('is_active', true)->first();
 
@@ -40,10 +35,8 @@ class ContractController extends Controller
             return response()->json(['message' => 'No active formula version exists'], 422);
         }
 
-        $calculation = $this->calculator->calculate($activeFormula, $contract);
+        CalculateCommission::dispatch($contract, $activeFormula);
 
-        return (new CommissionCalculationResource($calculation))
-            ->response()
-            ->setStatusCode(200);
+        return response()->json(['message' => 'Calculation queued'], 202);
     }
 }
