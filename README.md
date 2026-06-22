@@ -1,99 +1,81 @@
-# Dynamic Commission Engine
+# EnergyLogix — Dynamic Commission Engine
 
-A Laravel 13 application that lets energy brokers define versioned commission formulas, validate them (syntax, undefined variables, circular dependencies), simulate their impact across all contracts before activation, and calculate per-contract commissions with a full audit trail.
+This repository contains two independent sub-projects that together form the EnergyLogix platform:
 
----
-
-## Prerequisites
-
-- PHP 8.4+
-- Composer
-- Node.js 20+
-- npm
-- SQLite (default) or MySQL
+| Sub-project | Stack | Directory |
+|---|---|---|
+| **API** | Laravel 13, PHP 8.3, SQLite | [`api/`](./api/) |
+| **Client** | Vue 3, Vite, TanStack Query | [`client/`](./client/) |
 
 ---
 
-## Local Setup
+## Getting Started
+
+### 1. Start the API
 
 ```bash
-git clone <repo>
-cd energyLogix
+cd api
 composer install
-npm install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
-php artisan db:seed
+php artisan migrate --seed
+php artisan serve        # → http://localhost:8000
 ```
+
+### 2. Start the Client
+
+```bash
+cd client
+npm install
+npm run dev              # → http://localhost:5173
+```
+
+The frontend dev server proxies `/api/*` to `http://localhost:8000` automatically — no CORS configuration needed during development.
 
 ---
 
-## Running the App
+## API Reference
 
-Start the full dev stack (server, queue, logs, Vite) in one command:
+All endpoints are versioned under `/api/v1/`.
 
-```bash
-composer run dev
-```
-
-Or start the PHP server and Vite separately:
-
-```bash
-php artisan serve
-npm run dev
-```
-
----
-
-## Building Frontend Assets
-
-```bash
-npm run build
-```
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/formula-versions` | List all formula versions |
+| `POST` | `/api/v1/formula-versions` | Create a new formula version |
+| `GET` | `/api/v1/formula-versions/{id}` | Get a single formula version |
+| `POST` | `/api/v1/formula-versions/{id}/activate` | Activate a formula version |
+| `POST` | `/api/v1/formula-versions/{id}/simulate` | Dry-run simulation (no persisted records) |
+| `GET` | `/api/v1/contracts` | List all contracts |
+| `POST` | `/api/v1/contracts/{id}/calculate` | Calculate commission using the active formula |
+| `GET` | `/api/v1/calculations` | List all commission calculations (audit trail) |
+| `GET` | `/api/v1/calculations/{id}` | Get a single calculation with full step breakdown |
 
 ---
 
-## Running the Test Suite
+## Running Tests (API)
 
 ```bash
+cd api
 php artisan test --compact
 ```
 
----
-
-## API Overview
-
-All endpoints are versioned under `/api/v1`.
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/v1/formula-versions` | List all formula versions |
-| `POST` | `/api/v1/formula-versions` | Create a new formula version (validates expression) |
-| `GET` | `/api/v1/formula-versions/{id}` | Get a single formula version |
-| `POST` | `/api/v1/formula-versions/{id}/activate` | Activate a formula version (deactivates all others) |
-| `POST` | `/api/v1/formula-versions/{id}/simulate` | Dry-run simulation across all contracts |
-| `GET` | `/api/v1/contracts` | List all contracts |
-| `POST` | `/api/v1/contracts/{id}/calculate` | Calculate commission for a contract using the active formula |
-| `GET` | `/api/v1/calculations` | List all calculation records (newest first) |
-| `GET` | `/api/v1/calculations/{id}` | Get full audit record for a single calculation |
+91 tests, all passing.
 
 ---
 
-## Key Features
+## Production Environment Variables
 
-- **Formula builder with validation** — PascalCase variable references (`AnnualUsage`, `ContractValue`, `ContractLength`, `RiskScore`), custom recursive-descent parser, no `eval()`
-- **Version control** — incrementing version numbers, at most one active version at any time
-- **Dry-run simulation** — compare current vs. proposed formula totals across all contracts before activating
-- **Per-contract calculation** — resolves intermediate variables in dependency order, evaluates the main expression, returns the result
-- **Full audit trail** — every calculation persists input values, each intermediate step, and the final result; records are immutable
+### API (`api/.env`)
 
----
+```env
+APP_URL=https://your-api-domain.com
+FRONTEND_URL=https://your-frontend-domain.com   # Used for CORS
+DB_CONNECTION=sqlite
+QUEUE_CONNECTION=sync
+```
 
-## Environment Variables
+### Client (`client/.env`)
 
-| Variable | Description |
-|----------|-------------|
-| `APP_KEY` | Laravel application encryption key (set via `php artisan key:generate`) |
-| `DB_CONNECTION` | Database driver — `sqlite` (default) or `mysql` |
-| `DB_DATABASE` | Path to the SQLite file or MySQL database name |
+```env
+VITE_API_BASE_URL=https://your-api-domain.com   # Leave empty to use the Vite proxy
+```
