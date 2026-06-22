@@ -2,39 +2,14 @@
 
 namespace App\Services;
 
+use App\Enums\FormulaNode;
+use App\Enums\FormulaToken;
 use App\Exceptions\DivisionByZeroException;
 use App\Exceptions\ParseException;
 use App\Exceptions\UndefinedVariableException;
 
 class FormulaEvaluator
 {
-    public const NUMBER = 'NUMBER';
-
-    public const IDENT = 'IDENT';
-
-    public const PLUS = 'PLUS';
-
-    public const MINUS = 'MINUS';
-
-    public const STAR = 'STAR';
-
-    public const SLASH = 'SLASH';
-
-    public const LPAREN = 'LPAREN';
-
-    public const RPAREN = 'RPAREN';
-
-    private const NODE_NUMBER = 'NODE_NUMBER';
-
-    private const NODE_IDENT = 'NODE_IDENT';
-
-    private const NODE_BINARY_OP = 'NODE_BINARY_OP';
-
-    /** @var array<int, array{type: string, value: string|float|null}> */
-    private array $tokens = [];
-
-    private int $position = 0;
-
     /**
      * @param  array<string, float|int>  $variables
      *
@@ -44,14 +19,14 @@ class FormulaEvaluator
      */
     public function evaluate(string $expression, array $variables): float
     {
-        $this->tokens = $this->tokenise($expression);
-        $this->position = 0;
+        $tokens = $this->tokenise($expression);
+        $position = 0;
 
-        $ast = $this->parseExpression();
+        $ast = $this->parseExpression($tokens, $position);
 
-        if ($this->position < count($this->tokens)) {
-            $unexpected = $this->tokens[$this->position]['value'] ?? 'unknown';
-            throw new ParseException("Unexpected token '{$unexpected}' at position {$this->position}");
+        if ($position < count($tokens)) {
+            $unexpected = $tokens[$position]['value'] ?? 'unknown';
+            throw new ParseException("Unexpected token '{$unexpected}' at position {$position}");
         }
 
         return $this->evaluateNode($ast, $variables);
@@ -62,23 +37,22 @@ class FormulaEvaluator
         $tokens = $this->tokenise($expression);
 
         foreach ($tokens as $token) {
-            if ($token['type'] === self::IDENT && ! in_array($token['value'], $allowedVariables, true)) {
+            if ($token['type'] === FormulaToken::IDENT && ! in_array($token['value'], $allowedVariables, true)) {
                 throw new UndefinedVariableException((string) $token['value']);
             }
         }
 
-        $this->tokens = $tokens;
-        $this->position = 0;
-        $this->parseExpression();
+        $position = 0;
+        $this->parseExpression($tokens, $position);
 
-        if ($this->position < count($this->tokens)) {
-            $unexpected = $this->tokens[$this->position]['value'] ?? 'unknown';
-            throw new ParseException("Unexpected token '{$unexpected}' at position {$this->position}");
+        if ($position < count($tokens)) {
+            $unexpected = $tokens[$position]['value'] ?? 'unknown';
+            throw new ParseException("Unexpected token '{$unexpected}' at position {$position}");
         }
     }
 
     /**
-     * @return array<int, array{type: string, value: string|float|null}>
+     * @return array<int, array{type: FormulaToken, value: string|float|null}>
      *
      * @throws ParseException
      */
@@ -102,7 +76,7 @@ class FormulaEvaluator
                 while ($i < $length && (ctype_digit($expression[$i]) || $expression[$i] === '.')) {
                     $i++;
                 }
-                $tokens[] = ['type' => self::NUMBER, 'value' => (float) substr($expression, $start, $i - $start)];
+                $tokens[] = ['type' => FormulaToken::NUMBER, 'value' => (float) substr($expression, $start, $i - $start)];
 
                 continue;
             }
@@ -112,39 +86,39 @@ class FormulaEvaluator
                 while ($i < $length && (ctype_alnum($expression[$i]) || $expression[$i] === '_')) {
                     $i++;
                 }
-                $tokens[] = ['type' => self::IDENT, 'value' => substr($expression, $start, $i - $start)];
+                $tokens[] = ['type' => FormulaToken::IDENT, 'value' => substr($expression, $start, $i - $start)];
 
                 continue;
             }
 
             switch ($char) {
                 case '+':
-                    $tokens[] = ['type' => self::PLUS, 'value' => '+'];
+                    $tokens[] = ['type' => FormulaToken::PLUS, 'value' => '+'];
                     $i++;
 
                     continue 2;
                 case '-':
-                    $tokens[] = ['type' => self::MINUS, 'value' => '-'];
+                    $tokens[] = ['type' => FormulaToken::MINUS, 'value' => '-'];
                     $i++;
 
                     continue 2;
                 case '*':
-                    $tokens[] = ['type' => self::STAR, 'value' => '*'];
+                    $tokens[] = ['type' => FormulaToken::STAR, 'value' => '*'];
                     $i++;
 
                     continue 2;
                 case '/':
-                    $tokens[] = ['type' => self::SLASH, 'value' => '/'];
+                    $tokens[] = ['type' => FormulaToken::SLASH, 'value' => '/'];
                     $i++;
 
                     continue 2;
                 case '(':
-                    $tokens[] = ['type' => self::LPAREN, 'value' => '('];
+                    $tokens[] = ['type' => FormulaToken::LPAREN, 'value' => '('];
                     $i++;
 
                     continue 2;
                 case ')':
-                    $tokens[] = ['type' => self::RPAREN, 'value' => ')'];
+                    $tokens[] = ['type' => FormulaToken::RPAREN, 'value' => ')'];
                     $i++;
 
                     continue 2;
@@ -157,19 +131,20 @@ class FormulaEvaluator
     }
 
     /**
+     * @param array<int, array{type: FormulaToken, value: string|float|null}> $tokens
      * @return array<string, mixed>
      */
-    private function parseExpression(): array
+    private function parseExpression(array $tokens, int &$position): array
     {
-        $node = $this->parseTerm();
+        $node = $this->parseTerm($tokens, $position);
 
-        while ($this->position < count($this->tokens)
-            && in_array($this->tokens[$this->position]['type'], [self::PLUS, self::MINUS], true)) {
-            $operator = (string) $this->tokens[$this->position]['value'];
-            $this->position++;
-            $right = $this->parseTerm();
+        while ($position < count($tokens)
+            && in_array($tokens[$position]['type'], [FormulaToken::PLUS, FormulaToken::MINUS], true)) {
+            $operator = (string) $tokens[$position]['value'];
+            $position++;
+            $right = $this->parseTerm($tokens, $position);
             $node = [
-                'type' => self::NODE_BINARY_OP,
+                'type' => FormulaNode::BINARY_OP,
                 'operator' => $operator,
                 'left' => $node,
                 'right' => $right,
@@ -180,19 +155,20 @@ class FormulaEvaluator
     }
 
     /**
+     * @param array<int, array{type: FormulaToken, value: string|float|null}> $tokens
      * @return array<string, mixed>
      */
-    private function parseTerm(): array
+    private function parseTerm(array $tokens, int &$position): array
     {
-        $node = $this->parseFactor();
+        $node = $this->parseFactor($tokens, $position);
 
-        while ($this->position < count($this->tokens)
-            && in_array($this->tokens[$this->position]['type'], [self::STAR, self::SLASH], true)) {
-            $operator = (string) $this->tokens[$this->position]['value'];
-            $this->position++;
-            $right = $this->parseFactor();
+        while ($position < count($tokens)
+            && in_array($tokens[$position]['type'], [FormulaToken::STAR, FormulaToken::SLASH], true)) {
+            $operator = (string) $tokens[$position]['value'];
+            $position++;
+            $right = $this->parseFactor($tokens, $position);
             $node = [
-                'type' => self::NODE_BINARY_OP,
+                'type' => FormulaNode::BINARY_OP,
                 'operator' => $operator,
                 'left' => $node,
                 'right' => $right,
@@ -203,37 +179,38 @@ class FormulaEvaluator
     }
 
     /**
+     * @param array<int, array{type: FormulaToken, value: string|float|null}> $tokens
      * @return array<string, mixed>
      */
-    private function parseFactor(): array
+    private function parseFactor(array $tokens, int &$position): array
     {
-        if ($this->position >= count($this->tokens)) {
+        if ($position >= count($tokens)) {
             throw new ParseException('Unexpected end of expression: expected a number, variable, or opening parenthesis');
         }
 
-        $token = $this->tokens[$this->position];
+        $token = $tokens[$position];
 
-        if ($token['type'] === self::NUMBER) {
-            $this->position++;
+        if ($token['type'] === FormulaToken::NUMBER) {
+            $position++;
 
-            return ['type' => self::NODE_NUMBER, 'value' => (float) $token['value']];
+            return ['type' => FormulaNode::NUMBER, 'value' => (float) $token['value']];
         }
 
-        if ($token['type'] === self::IDENT) {
-            $this->position++;
+        if ($token['type'] === FormulaToken::IDENT) {
+            $position++;
 
-            return ['type' => self::NODE_IDENT, 'name' => (string) $token['value']];
+            return ['type' => FormulaNode::IDENT, 'name' => (string) $token['value']];
         }
 
-        if ($token['type'] === self::LPAREN) {
-            $this->position++;
-            $node = $this->parseExpression();
+        if ($token['type'] === FormulaToken::LPAREN) {
+            $position++;
+            $node = $this->parseExpression($tokens, $position);
 
-            if ($this->position >= count($this->tokens) || $this->tokens[$this->position]['type'] !== self::RPAREN) {
+            if ($position >= count($tokens) || $tokens[$position]['type'] !== FormulaToken::RPAREN) {
                 throw new ParseException('Expected closing parenthesis');
             }
 
-            $this->position++;
+            $position++;
 
             return $node;
         }
@@ -251,19 +228,19 @@ class FormulaEvaluator
     private function evaluateNode(array $node, array $variables): float
     {
         return match ($node['type']) {
-            self::NODE_NUMBER => (float) $node['value'],
+            FormulaNode::NUMBER => (float) $node['value'],
 
-            self::NODE_IDENT => isset($variables[$node['name']])
+            FormulaNode::IDENT => isset($variables[$node['name']])
                 ? (float) $variables[$node['name']]
                 : throw new UndefinedVariableException((string) $node['name']),
 
-            self::NODE_BINARY_OP => $this->evaluateBinaryOp(
+            FormulaNode::BINARY_OP => $this->evaluateBinaryOp(
                 (string) $node['operator'],
                 $this->evaluateNode($node['left'], $variables),
                 $this->evaluateNode($node['right'], $variables),
             ),
 
-            default => throw new ParseException("Unknown AST node type: {$node['type']}"),
+            default => throw new ParseException("Unknown AST node type: {$node['type']->name}"),
         };
     }
 

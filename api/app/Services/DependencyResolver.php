@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\FormulaToken;
 use App\Enums\FormulaVariable;
 use App\Exceptions\CircularDependencyException;
 use App\Exceptions\ParseException;
@@ -59,7 +60,7 @@ class DependencyResolver
         $baseVariables = FormulaVariable::values();
 
         return collect($tokens)
-            ->where('type', FormulaEvaluator::IDENT)
+            ->where('type', FormulaToken::IDENT)
             ->pluck('value')
             ->map(fn(mixed $value): string => (string) $value)
             ->reject(fn(string $value) => in_array($value, $baseVariables, true))
