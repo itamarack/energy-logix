@@ -24,6 +24,13 @@ class FormulaValidator
         private readonly DependencyResolver $resolver,
     ) {}
 
+    /**
+     * @param  array<int, array{name: string, expression: string}>  $variables
+     *
+     * @throws ParseException
+     * @throws UndefinedVariableException
+     * @throws CircularDependencyException
+     */
     public function validate(string $expression, array $variables): void
     {
         $intermediateNames = array_map(fn (array $var): string => $var['name'], $variables);

@@ -77,6 +77,11 @@ class FormulaEvaluator
         }
     }
 
+    /**
+     * @return array<int, array{type: string, value: string|float|null}>
+     *
+     * @throws ParseException
+     */
     public function tokenise(string $expression): array
     {
         $tokens = [];
@@ -151,6 +156,9 @@ class FormulaEvaluator
         return $tokens;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function parseExpression(): array
     {
         $node = $this->parseTerm();
@@ -171,6 +179,9 @@ class FormulaEvaluator
         return $node;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function parseTerm(): array
     {
         $node = $this->parseFactor();
@@ -191,6 +202,9 @@ class FormulaEvaluator
         return $node;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function parseFactor(): array
     {
         if ($this->position >= count($this->tokens)) {
@@ -227,6 +241,13 @@ class FormulaEvaluator
         throw new ParseException("Unexpected token '{$token['value']}': expected a number, variable, or opening parenthesis");
     }
 
+    /**
+     * @param  array<string, mixed>  $node
+     * @param  array<string, float|int>  $variables
+     *
+     * @throws UndefinedVariableException
+     * @throws DivisionByZeroException
+     */
     private function evaluateNode(array $node, array $variables): float
     {
         return match ($node['type']) {
@@ -246,6 +267,9 @@ class FormulaEvaluator
         };
     }
 
+    /**
+     * @throws DivisionByZeroException
+     */
     private function evaluateBinaryOp(string $operator, float $left, float $right): float
     {
         return match ($operator) {
