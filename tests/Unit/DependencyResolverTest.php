@@ -1,0 +1,146 @@
+<?php
+
+use App\Exceptions\CircularDependencyException;
+use App\Services\DependencyResolver;
+use App\Services\FormulaEvaluator;
+
+/**
+ * @phpstan-type Variable array{name: string, expression: string}
+ */
+beforeEach(function (): void {
+    $this->resolver = new DependencyResolver(new FormulaEvaluator);
+});
+
+// -------------------------------------------------------------------------
+// Empty / trivial cases
+// -------------------------------------------------------------------------
+
+it('returns empty array for empty variables list', function (): void {
+    expect($this->resolver->resolve([]))->toBe([]);
+});
+
+// -------------------------------------------------------------------------
+// Valid graphs — correct topological order
+// -------------------------------------------------------------------------
+
+it('returns single variable with no intermediate dependencies', function (): void {
+    $result = $this->resolver->resolve([
+        ['name' => 'A', 'expression' => 'AnnualUsage * 2'],
+    ]);
+
+    expect($result)->toBe(['A']);
+});
+
+it('resolves two-level chain where B depends on A', function (): void {
+    $result = $this->resolver->resolve([
+        ['name' => 'B', 'expression' => 'A * 1.1'],
+        ['name' => 'A', 'expression' => 'AnnualUsage * 2'],
+    ]);
+
+    // A must come before B regardless of declaration order
+    expect($result)->toBe(['A', 'B']);
+});
+
+it('resolves three-variable chain A → B → C', function (): void {
+    $result = $this->resolver->resolve([
+        ['name' => 'C', 'expression' => 'B + 100'],
+        ['name' => 'A', 'expression' => 'AnnualUsage * 0.05'],
+        ['name' => 'B', 'expression' => 'A * ContractLength'],
+    ]);
+
+    expect($result)->toBe(['A', 'B', 'C']);
+});
+
+it('resolves declaration order independence — same graph, different declaration orders', function (): void {
+    $forward = $this->resolver->resolve([
+        ['name' => 'X', 'expression' => 'AnnualUsage * 0.1'],
+        ['name' => 'Y', 'expression' => 'X + 50'],
+    ]);
+
+    $reversed = $this->resolver->resolve([
+        ['name' => 'Y', 'expression' => 'X + 50'],
+        ['name' => 'X', 'expression' => 'AnnualUsage * 0.1'],
+    ]);
+
+    expect($forward)->toBe(['X', 'Y'])
+        ->and($reversed)->toBe(['X', 'Y']);
+});
+
+it('resolves two independent variables (no edges between them)', function (): void {
+    $result = $this->resolver->resolve([
+        ['name' => 'Alpha', 'expression' => 'AnnualUsage * 2'],
+        ['name' => 'Beta', 'expression' => 'ContractValue * 0.1'],
+    ]);
+
+    // Both have zero in-degree; order is stable (insertion order)
+    expect($result)->toHaveCount(2)
+        ->and($result)->toContain('Alpha')
+        ->and($result)->toContain('Beta');
+});
+
+// -------------------------------------------------------------------------
+// Circular dependency detection
+// -------------------------------------------------------------------------
+
+it('raises CircularDependencyException for a 2-node cycle', function (): void {
+    expect(fn () => $this->resolver->resolve([
+        ['name' => 'BaseCommission', 'expression' => 'AdjustedCommission * 1.1'],
+        ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 0.9'],
+    ]))
+        ->toThrow(CircularDependencyException::class);
+});
+
+it('names both cycle members in the CircularDependencyException message for a 2-node cycle', function (): void {
+    try {
+        $this->resolver->resolve([
+            ['name' => 'BaseCommission', 'expression' => 'AdjustedCommission * 1.1'],
+            ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 0.9'],
+        ]);
+
+        $this->fail('Expected CircularDependencyException to be thrown');
+    } catch (CircularDependencyException $e) {
+        expect($e->getMessage())
+            ->toContain('BaseCommission')
+            ->toContain('AdjustedCommission');
+    }
+});
+
+it('raises CircularDependencyException for a 3-node cycle A → B → C → A', function (): void {
+    expect(fn () => $this->resolver->resolve([
+        ['name' => 'A', 'expression' => 'B * 1'],
+        ['name' => 'B', 'expression' => 'C * 1'],
+        ['name' => 'C', 'expression' => 'A * 1'],
+    ]))
+        ->toThrow(CircularDependencyException::class);
+});
+
+it('names all three cycle members in message for a 3-node cycle', function (): void {
+    try {
+        $this->resolver->resolve([
+            ['name' => 'A', 'expression' => 'B * 1'],
+            ['name' => 'B', 'expression' => 'C * 1'],
+            ['name' => 'C', 'expression' => 'A * 1'],
+        ]);
+
+        $this->fail('Expected CircularDependencyException to be thrown');
+    } catch (CircularDependencyException $e) {
+        expect($e->getMessage())
+            ->toContain('A')
+            ->toContain('B')
+            ->toContain('C');
+    }
+});
+
+// -------------------------------------------------------------------------
+// Base input variables are NOT treated as dependency edges
+// -------------------------------------------------------------------------
+
+it('does not create edges for base input variables', function (): void {
+    // Both variables reference base inputs only — no inter-variable edges expected
+    $result = $this->resolver->resolve([
+        ['name' => 'Fee', 'expression' => 'AnnualUsage * RiskScore'],
+        ['name' => 'Base', 'expression' => 'ContractValue * ContractLength'],
+    ]);
+
+    expect($result)->toHaveCount(2);
+});
