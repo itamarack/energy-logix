@@ -10,6 +10,8 @@ class CommissionCalculation extends Model
 {
     use HasFactory;
 
+    public const RESULT = 'RESULT';
+
     protected $guarded = [];
 
     protected function casts(): array

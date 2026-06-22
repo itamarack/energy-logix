@@ -14,9 +14,9 @@ beforeEach(function () {
 // ---------------------------------------------------------------------------
 
 test('evaluate returns correct result for simple multiplication and addition', function () {
-    $result = $this->evaluator->evaluate('AnnualUsage * ContractValue + 100', [
-        'AnnualUsage' => 5000,
-        'ContractValue' => 2.5,
+    $result = $this->evaluator->evaluate('annual_usage * contract_value + 100', [
+        'annual_usage' => 5000,
+        'contract_value' => 2.5,
     ]);
 
     expect($result)->toBe(12600.0);
@@ -41,10 +41,10 @@ test('evaluate handles subtraction and division', function () {
 });
 
 test('evaluate resolves multiple variables', function () {
-    $result = $this->evaluator->evaluate('AnnualUsage + ContractLength + RiskScore', [
-        'AnnualUsage' => 1000,
-        'ContractLength' => 12,
-        'RiskScore' => 0.5,
+    $result = $this->evaluator->evaluate('annual_usage + contract_length + risk_score', [
+        'annual_usage' => 1000,
+        'contract_length' => 12,
+        'risk_score' => 0.5,
     ]);
 
     expect($result)->toBe(1012.5);
@@ -55,18 +55,18 @@ test('evaluate resolves multiple variables', function () {
 // ---------------------------------------------------------------------------
 
 test('evaluate throws ParseException for exponentiation operator **', function () {
-    $this->evaluator->evaluate('AnnualUsage ** ContractValue', [
-        'AnnualUsage' => 5000,
-        'ContractValue' => 2,
+    $this->evaluator->evaluate('annual_usage ** contract_value', [
+        'annual_usage' => 5000,
+        'contract_value' => 2,
     ]);
 })->throws(ParseException::class);
 
 test('evaluate throws ParseException for unrecognised at-sign operator', function () {
-    $this->evaluator->evaluate('AnnualUsage @ 5', ['AnnualUsage' => 100]);
+    $this->evaluator->evaluate('annual_usage @ 5', ['annual_usage' => 100]);
 })->throws(ParseException::class);
 
 test('evaluate throws ParseException for unrecognised hash character prefix', function () {
-    $this->evaluator->evaluate('#AnnualUsage', ['AnnualUsage' => 100]);
+    $this->evaluator->evaluate('#annual_usage', ['annual_usage' => 100]);
 })->throws(ParseException::class);
 
 // ---------------------------------------------------------------------------
@@ -74,8 +74,8 @@ test('evaluate throws ParseException for unrecognised hash character prefix', fu
 // ---------------------------------------------------------------------------
 
 test('evaluate throws UndefinedVariableException for missing variable', function () {
-    $this->evaluator->evaluate('AnnualUsage * PeakDemand', ['AnnualUsage' => 5000]);
-})->throws(UndefinedVariableException::class, 'PeakDemand');
+    $this->evaluator->evaluate('annual_usage * peak_demand', ['annual_usage' => 5000]);
+})->throws(UndefinedVariableException::class, 'peak_demand');
 
 test('UndefinedVariableException message includes the variable name', function () {
     try {
@@ -90,13 +90,13 @@ test('UndefinedVariableException message includes the variable name', function (
 // ---------------------------------------------------------------------------
 
 test('evaluate throws DivisionByZeroException when dividing by zero literal', function () {
-    $this->evaluator->evaluate('AnnualUsage / 0', ['AnnualUsage' => 5000]);
+    $this->evaluator->evaluate('annual_usage / 0', ['annual_usage' => 5000]);
 })->throws(DivisionByZeroException::class);
 
 test('evaluate throws DivisionByZeroException when divisor resolves to zero', function () {
-    $this->evaluator->evaluate('AnnualUsage / ZeroVar', [
-        'AnnualUsage' => 5000,
-        'ZeroVar' => 0,
+    $this->evaluator->evaluate('annual_usage / zero_var', [
+        'annual_usage' => 5000,
+        'zero_var' => 0,
     ]);
 })->throws(DivisionByZeroException::class);
 
@@ -106,17 +106,17 @@ test('evaluate throws DivisionByZeroException when divisor resolves to zero', fu
 
 test('validate passes for expression using only allowed variables', function () {
     expect(fn () => $this->evaluator->validate(
-        'AnnualUsage * ContractValue',
-        ['AnnualUsage', 'ContractValue']
+        'annual_usage * contract_value',
+        ['annual_usage', 'contract_value']
     ))->not->toThrow(Throwable::class);
 });
 
 test('validate throws UndefinedVariableException for variable not in allowed list', function () {
-    $this->evaluator->validate('AnnualUsage * Unknown', ['AnnualUsage']);
-})->throws(UndefinedVariableException::class, 'Unknown');
+    $this->evaluator->validate('annual_usage * unknown', ['annual_usage']);
+})->throws(UndefinedVariableException::class, 'unknown');
 
 test('validate throws ParseException for syntactically invalid expression', function () {
-    $this->evaluator->validate('AnnualUsage ** 2', ['AnnualUsage']);
+    $this->evaluator->validate('annual_usage ** 2', ['annual_usage']);
 })->throws(ParseException::class);
 
 // ---------------------------------------------------------------------------

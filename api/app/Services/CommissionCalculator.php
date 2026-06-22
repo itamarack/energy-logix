@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\DTOs\CommissionCalculationData;
+use App\Enums\FormulaVariable;
 use App\Models\CommissionCalculation;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
@@ -13,16 +15,13 @@ class CommissionCalculator
         private readonly DependencyResolver $resolver,
     ) {}
 
-    public function calculate(FormulaVersion $formula, Contract $contract): CommissionCalculation
+    public function calculate(FormulaVersion $formula, Contract $contract): CommissionCalculationData
     {
-        $variableMap = $this->buildVariableMap($contract);
+        $inputValues = $contract->only(FormulaVariable::values());        
+        $variableMap = $inputValues;
 
         $orderedNames = $this->resolver->resolve($formula->variables);
-
-        $variablesByName = [];
-        foreach ($formula->variables as $variable) {
-            $variablesByName[$variable['name']] = $variable['expression'];
-        }
+        $variablesByName = collect($formula->variables)->pluck('expression', 'name')->toArray();
 
         $steps = [];
         foreach ($orderedNames as $name) {
@@ -41,38 +40,15 @@ class CommissionCalculator
         $result = $this->evaluator->evaluate($formula->expression, $variableMap);
 
         $steps[] = [
-            'variable' => 'RESULT',
+            'variable' => CommissionCalculation::RESULT,
             'expression' => $formula->expression,
             'value' => $result,
         ];
 
-        return CommissionCalculation::create([
-            'formula_version_id' => $formula->id,
-            'contract_id' => $contract->id,
-            'input_values' => $this->buildInputValues($contract),
-            'calculation_steps' => $steps,
-            'result' => $result,
-            'calculated_at' => now(),
-        ]);
-    }
-
-    private function buildVariableMap(Contract $contract): array
-    {
-        return [
-            'AnnualUsage' => $contract->annual_usage,
-            'ContractValue' => $contract->contract_value,
-            'ContractLength' => $contract->contract_length,
-            'RiskScore' => $contract->risk_score,
-        ];
-    }
-
-    private function buildInputValues(Contract $contract): array
-    {
-        return [
-            'AnnualUsage' => $contract->annual_usage,
-            'ContractValue' => $contract->contract_value,
-            'ContractLength' => $contract->contract_length,
-            'RiskScore' => $contract->risk_score,
-        ];
+        return new CommissionCalculationData(
+            inputValues: $inputValues,
+            steps: $steps,
+            result: $result,
+        );
     }
 }

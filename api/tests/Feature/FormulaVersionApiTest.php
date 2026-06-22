@@ -40,7 +40,7 @@ test('POST /api/v1/formula-versions with a valid formula persists the record and
 
     $payload = [
         'name' => 'Standard Energy Commission',
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
     ];
 
@@ -48,7 +48,7 @@ test('POST /api/v1/formula-versions with a valid formula persists the record and
 
     $response->assertCreated();
     $response->assertJsonPath('data.name', 'Standard Energy Commission');
-    $response->assertJsonPath('data.expression', '(AnnualUsage * 0.05) + (ContractLength * 100)');
+    $response->assertJsonPath('data.expression', '(annual_usage * 0.05) + (contract_length * 100)');
     $response->assertJsonPath('data.is_active', false);
 
     expect(FormulaVersion::count())->toBe($beforeCount + 1);
@@ -61,10 +61,10 @@ test('POST /api/v1/formula-versions with a valid formula persists the record and
 test('POST /api/v1/formula-versions with a circular dependency returns 422 with cycle member names', function (): void {
     $payload = [
         'name' => 'Circular Formula',
-        'expression' => 'BaseCommission + 0',
+        'expression' => 'base_commission + 0',
         'variables' => [
-            ['name' => 'BaseCommission',     'expression' => 'AdjustedCommission * 1.1'],
-            ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 0.9'],
+            ['name' => 'base_commission',     'expression' => 'AdjustedCommission * 1.1'],
+            ['name' => 'AdjustedCommission', 'expression' => 'base_commission * 0.9'],
         ],
     ];
 
@@ -73,7 +73,7 @@ test('POST /api/v1/formula-versions with a circular dependency returns 422 with 
     $response->assertUnprocessable();
 
     $body = $response->getContent();
-    expect($body)->toContain('BaseCommission')
+    expect($body)->toContain('base_commission')
         ->and($body)->toContain('AdjustedCommission');
 });
 
@@ -84,7 +84,7 @@ test('POST /api/v1/formula-versions with a circular dependency returns 422 with 
 test('POST /api/v1/formula-versions with a syntax error returns 422', function (): void {
     $payload = [
         'name' => 'Bad Syntax Formula',
-        'expression' => 'AnnualUsage ** ContractValue',
+        'expression' => 'annual_usage ** contract_value',
         'variables' => [],
     ];
 
@@ -100,14 +100,14 @@ test('POST /api/v1/formula-versions with a syntax error returns 422', function (
 test('POST /api/v1/formula-versions referencing an undefined variable returns 422 with variable name', function (): void {
     $payload = [
         'name' => 'Undefined Var Formula',
-        'expression' => 'AnnualUsage * PeakDemand',
+        'expression' => 'annual_usage * peak_demand',
         'variables' => [],
     ];
 
     $response = $this->postJson('/api/v1/formula-versions', $payload);
 
     $response->assertUnprocessable();
-    expect($response->getContent())->toContain('PeakDemand');
+    expect($response->getContent())->toContain('peak_demand');
 });
 
 // ---------------------------------------------------------------------------
@@ -147,14 +147,14 @@ test('POST /api/v1/formula-versions/{id}/activate activates target and deactivat
 
 test('POST /api/v1/formula-versions/{id}/simulate returns simulation result and does not persist records', function (): void {
     FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.05',
+        'expression' => 'annual_usage * 0.05',
         'variables' => [],
         'is_active' => true,
     ]);
 
     /** @var FormulaVersion $targetFormula */
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.06',
+        'expression' => 'annual_usage * 0.06',
         'variables' => [],
         'is_active' => false,
     ]);

@@ -20,7 +20,7 @@ class FormulaVersionFactory extends Factory
         return [
             'name' => fake()->company().' Commission '.fake()->randomElement(['Q1', 'Q2', 'Q3', 'Q4']).' '.fake()->year(),
             'description' => fake()->optional()->sentence(),
-            'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+            'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
             'variables' => [],
             'is_active' => false,
             'version_number' => $this->faker->unique()->numberBetween(1, 1000),

@@ -25,7 +25,7 @@ it('returns empty array for empty variables list', function (): void {
 
 it('returns single variable with no intermediate dependencies', function (): void {
     $result = $this->resolver->resolve([
-        ['name' => 'A', 'expression' => 'AnnualUsage * 2'],
+        ['name' => 'A', 'expression' => 'annual_usage * 2'],
     ]);
 
     expect($result)->toBe(['A']);
@@ -34,7 +34,7 @@ it('returns single variable with no intermediate dependencies', function (): voi
 it('resolves two-level chain where B depends on A', function (): void {
     $result = $this->resolver->resolve([
         ['name' => 'B', 'expression' => 'A * 1.1'],
-        ['name' => 'A', 'expression' => 'AnnualUsage * 2'],
+        ['name' => 'A', 'expression' => 'annual_usage * 2'],
     ]);
 
     // A must come before B regardless of declaration order
@@ -44,8 +44,8 @@ it('resolves two-level chain where B depends on A', function (): void {
 it('resolves three-variable chain A → B → C', function (): void {
     $result = $this->resolver->resolve([
         ['name' => 'C', 'expression' => 'B + 100'],
-        ['name' => 'A', 'expression' => 'AnnualUsage * 0.05'],
-        ['name' => 'B', 'expression' => 'A * ContractLength'],
+        ['name' => 'A', 'expression' => 'annual_usage * 0.05'],
+        ['name' => 'B', 'expression' => 'A * contract_length'],
     ]);
 
     expect($result)->toBe(['A', 'B', 'C']);
@@ -53,13 +53,13 @@ it('resolves three-variable chain A → B → C', function (): void {
 
 it('resolves declaration order independence — same graph, different declaration orders', function (): void {
     $forward = $this->resolver->resolve([
-        ['name' => 'X', 'expression' => 'AnnualUsage * 0.1'],
+        ['name' => 'X', 'expression' => 'annual_usage * 0.1'],
         ['name' => 'Y', 'expression' => 'X + 50'],
     ]);
 
     $reversed = $this->resolver->resolve([
         ['name' => 'Y', 'expression' => 'X + 50'],
-        ['name' => 'X', 'expression' => 'AnnualUsage * 0.1'],
+        ['name' => 'X', 'expression' => 'annual_usage * 0.1'],
     ]);
 
     expect($forward)->toBe(['X', 'Y'])
@@ -68,8 +68,8 @@ it('resolves declaration order independence — same graph, different declaratio
 
 it('resolves two independent variables (no edges between them)', function (): void {
     $result = $this->resolver->resolve([
-        ['name' => 'Alpha', 'expression' => 'AnnualUsage * 2'],
-        ['name' => 'Beta', 'expression' => 'ContractValue * 0.1'],
+        ['name' => 'Alpha', 'expression' => 'annual_usage * 2'],
+        ['name' => 'Beta', 'expression' => 'contract_value * 0.1'],
     ]);
 
     // Both have zero in-degree; order is stable (insertion order)
@@ -84,8 +84,8 @@ it('resolves two independent variables (no edges between them)', function (): vo
 
 it('raises CircularDependencyException for a 2-node cycle', function (): void {
     expect(fn () => $this->resolver->resolve([
-        ['name' => 'BaseCommission', 'expression' => 'AdjustedCommission * 1.1'],
-        ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 0.9'],
+        ['name' => 'base_commission', 'expression' => 'AdjustedCommission * 1.1'],
+        ['name' => 'AdjustedCommission', 'expression' => 'base_commission * 0.9'],
     ]))
         ->toThrow(CircularDependencyException::class);
 });
@@ -93,14 +93,14 @@ it('raises CircularDependencyException for a 2-node cycle', function (): void {
 it('names both cycle members in the CircularDependencyException message for a 2-node cycle', function (): void {
     try {
         $this->resolver->resolve([
-            ['name' => 'BaseCommission', 'expression' => 'AdjustedCommission * 1.1'],
-            ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 0.9'],
+            ['name' => 'base_commission', 'expression' => 'AdjustedCommission * 1.1'],
+            ['name' => 'AdjustedCommission', 'expression' => 'base_commission * 0.9'],
         ]);
 
         $this->fail('Expected CircularDependencyException to be thrown');
     } catch (CircularDependencyException $e) {
         expect($e->getMessage())
-            ->toContain('BaseCommission')
+            ->toContain('base_commission')
             ->toContain('AdjustedCommission');
     }
 });
@@ -138,8 +138,8 @@ it('names all three cycle members in message for a 3-node cycle', function (): v
 it('does not create edges for base input variables', function (): void {
     // Both variables reference base inputs only — no inter-variable edges expected
     $result = $this->resolver->resolve([
-        ['name' => 'Fee', 'expression' => 'AnnualUsage * RiskScore'],
-        ['name' => 'Base', 'expression' => 'ContractValue * ContractLength'],
+        ['name' => 'Fee', 'expression' => 'annual_usage * risk_score'],
+        ['name' => 'Base', 'expression' => 'contract_value * contract_length'],
     ]);
 
     expect($result)->toHaveCount(2);

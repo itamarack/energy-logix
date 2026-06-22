@@ -8,21 +8,21 @@ use App\Exceptions\UndefinedVariableException;
 
 class FormulaEvaluator
 {
-    private const NUMBER = 'NUMBER';
+    public const NUMBER = 'NUMBER';
 
-    private const IDENT = 'IDENT';
+    public const IDENT = 'IDENT';
 
-    private const PLUS = 'PLUS';
+    public const PLUS = 'PLUS';
 
-    private const MINUS = 'MINUS';
+    public const MINUS = 'MINUS';
 
-    private const STAR = 'STAR';
+    public const STAR = 'STAR';
 
-    private const SLASH = 'SLASH';
+    public const SLASH = 'SLASH';
 
-    private const LPAREN = 'LPAREN';
+    public const LPAREN = 'LPAREN';
 
-    private const RPAREN = 'RPAREN';
+    public const RPAREN = 'RPAREN';
 
     private const NODE_NUMBER = 'NODE_NUMBER';
 

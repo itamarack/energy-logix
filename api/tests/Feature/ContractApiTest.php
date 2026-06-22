@@ -36,7 +36,7 @@ test('GET /api/v1/contracts returns 200 with all contracts', function (): void {
 
 test('POST /api/v1/contracts/{id}/calculate with an active formula returns 200 and persists one new record', function (): void {
     FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);

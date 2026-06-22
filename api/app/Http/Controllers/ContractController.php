@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CalculateContractCommissionAction;
 use App\Http\Resources\CommissionCalculationResource;
 use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
-use App\Services\CommissionCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 class ContractController extends Controller
 {
     public function __construct(
-        private readonly CommissionCalculator $calculator,
+        private readonly CalculateContractCommissionAction $calculateAction,
     ) {}
 
     public function index(): JsonResponse
@@ -24,7 +24,7 @@ class ContractController extends Controller
         );
     }
 
-    public function calculate(Contract $contract): JsonResponse
+    public function calculate(Contract $contract): CommissionCalculationResource|JsonResponse
     {
         $activeFormula = FormulaVersion::query()->where('is_active', true)->first();
 
@@ -35,13 +35,10 @@ class ContractController extends Controller
             );
         }
 
-        $calculation = $this->calculator->calculate($activeFormula, $contract);
+        $calculation = $this->calculateAction->execute($activeFormula, $contract);
 
         $calculation->load(['formulaVersion', 'contract']);
 
-        return response()->json(
-            new CommissionCalculationResource($calculation),
-            Response::HTTP_OK
-        );
+        return new CommissionCalculationResource($calculation);
     }
 }

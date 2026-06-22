@@ -44,7 +44,7 @@ test('POST /api/v1/formula-versions with snake_case variable in expression retur
 
 test('calculate with negative annual_usage completes without exception and returns valid float', function (): void {
     FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);
@@ -71,7 +71,7 @@ test('calculate with negative annual_usage completes without exception and retur
 
 test('calculate with zero contract_value completes without exception and returns valid float', function (): void {
     FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);
@@ -99,7 +99,7 @@ test('calculate with zero contract_value completes without exception and returns
 
 test('calculate with very large contract_value completes without overflow exception', function (): void {
     FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);

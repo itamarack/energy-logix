@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Actions\CalculateContractCommissionAction;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
-use App\Services\CommissionCalculator;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -22,9 +22,9 @@ class CalculateCommission implements ShouldQueue
         public readonly FormulaVersion $formulaVersion,
     ) {}
 
-    public function handle(CommissionCalculator $calculator): void
+    public function handle(CalculateContractCommissionAction $calculateAction): void
     {
-        $calculator->calculate($this->formulaVersion, $this->contract);
+        $calculateAction->execute($this->formulaVersion, $this->contract);
     }
 
     public function failed(\Throwable $exception): void

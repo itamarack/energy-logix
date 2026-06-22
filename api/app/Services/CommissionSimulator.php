@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\SimulationResult;
-use App\Exceptions\CircularDependencyException;
-use App\Exceptions\ParseException;
-use App\Exceptions\UndefinedVariableException;
+use App\Enums\FormulaVariable;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
 
@@ -17,16 +15,11 @@ class CommissionSimulator
         private readonly DependencyResolver $resolver,
     ) {}
 
-    /**
-     * @throws ParseException
-     * @throws UndefinedVariableException
-     * @throws CircularDependencyException
-     */
     public function simulate(FormulaVersion $targetFormula): SimulationResult
     {
         $this->validator->validate($targetFormula->expression, $targetFormula->variables ?? []);
 
-        $activeFormula = FormulaVersion::where('is_active', true)->first();
+        $activeFormula = FormulaVersion::query()->where('is_active', true)->first();
         $contracts = Contract::all();
 
         $currentTotal = 0.0;
@@ -50,12 +43,7 @@ class CommissionSimulator
 
     private function calculateDryRun(FormulaVersion $formula, Contract $contract): float
     {
-        $variableMap = [
-            'AnnualUsage' => $contract->annual_usage,
-            'ContractValue' => $contract->contract_value,
-            'ContractLength' => $contract->contract_length,
-            'RiskScore' => $contract->risk_score,
-        ];
+        $variableMap = $contract->only(FormulaVariable::values());
 
         $orderedNames = $this->resolver->resolve($formula->variables ?? []);
 

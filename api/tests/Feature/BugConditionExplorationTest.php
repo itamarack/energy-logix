@@ -17,8 +17,8 @@
  * Test Case A — isBugCondition: containsCircularDependency = true
  *
  * POST /api/v1/formula-versions with variables that form a cycle:
- *   BaseCommission    = AdjustedCommission * 1.1
- *   AdjustedCommission = BaseCommission * 0.9
+ *   base_commission    = AdjustedCommission * 1.1
+ *   AdjustedCommission = base_commission * 0.9
  *
  * Expected: 422 with both cycle-member names present in the response body.
  * On unfixed code the system has no DependencyResolver running at save time,
@@ -27,10 +27,10 @@
 test('A: circular dependency formula is rejected with 422 and cycle members named', function (): void {
     $payload = [
         'name' => 'Circular Commission Formula',
-        'expression' => 'BaseCommission + 0',
+        'expression' => 'base_commission + 0',
         'variables' => [
-            ['name' => 'BaseCommission',     'expression' => 'AdjustedCommission * 1.1'],
-            ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 0.9'],
+            ['name' => 'base_commission',     'expression' => 'AdjustedCommission * 1.1'],
+            ['name' => 'AdjustedCommission', 'expression' => 'base_commission * 0.9'],
         ],
     ];
 
@@ -42,15 +42,15 @@ test('A: circular dependency formula is rejected with 422 and cycle members name
     // Both cycle members must appear in the error body
     $body = $response->getContent();
     expect($body)
-        ->toContain('BaseCommission')
+        ->toContain('base_commission')
         ->toContain('AdjustedCommission');
 });
 
 /**
  * Test Case B — isBugCondition: referencesUndefinedVariable = true
  *
- * POST /api/v1/formula-versions with expression `AnnualUsage * PeakDemand`
- * where `PeakDemand` is not a base input variable and is not declared as an
+ * POST /api/v1/formula-versions with expression `annual_usage * peak_demand`
+ * where `peak_demand` is not a base input variable and is not declared as an
  * intermediate variable.
  *
  * Expected: 422 with the unknown variable name in the response body.
@@ -59,7 +59,7 @@ test('A: circular dependency formula is rejected with 422 and cycle members name
 test('B: formula referencing undefined variable is rejected with 422 and variable name in response', function (): void {
     $payload = [
         'name' => 'Undefined Variable Formula',
-        'expression' => 'AnnualUsage * PeakDemand',
+        'expression' => 'annual_usage * peak_demand',
         'variables' => [],
     ];
 
@@ -68,13 +68,13 @@ test('B: formula referencing undefined variable is rejected with 422 and variabl
     $response->assertStatus(422);
 
     $body = $response->getContent();
-    expect($body)->toContain('PeakDemand');
+    expect($body)->toContain('peak_demand');
 });
 
 /**
  * Test Case C — isBugCondition: isSyntacticallyInvalid = true
  *
- * POST /api/v1/formula-versions with expression `AnnualUsage ** ContractValue`
+ * POST /api/v1/formula-versions with expression `annual_usage ** contract_value`
  * (double-star `**` is not part of the supported grammar: +, -, *, /, parens).
  *
  * Expected: 422.
@@ -84,7 +84,7 @@ test('B: formula referencing undefined variable is rejected with 422 and variabl
 test('C: syntactically invalid expression is rejected with 422', function (): void {
     $payload = [
         'name' => 'Invalid Syntax Formula',
-        'expression' => 'AnnualUsage ** ContractValue',
+        'expression' => 'annual_usage ** contract_value',
         'variables' => [],
     ];
 

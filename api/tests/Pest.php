@@ -25,7 +25,7 @@ pest()
     ->beforeEach(function (): void {
         FormulaVersion::factory()->create([
             'name' => 'Bug Exploration Seed',
-            'expression' => 'AnnualUsage * 0.05',
+            'expression' => 'annual_usage * 0.05',
             'variables' => [],
             'is_active' => false,
         ]);

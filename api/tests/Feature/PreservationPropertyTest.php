@@ -31,7 +31,7 @@ use App\Models\FormulaVersion;
 test('correct commission is calculated for a known formula and seeded contract', function (): void {
     /** @var FormulaVersion $formula */
     $formula = FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);
@@ -51,7 +51,7 @@ test('correct commission is calculated for a known formula and seeded contract',
 
     $response->assertSuccessful();
 
-    $body = $response->json();
+    dd($response->json());
     expect((float) $body['data']['result'])->toBe((float) $expectedResult);
 });
 
@@ -63,7 +63,7 @@ test('correct commission is calculated for a known formula and seeded contract',
 
 test('commission calculation persists exactly one new record with all required fields', function (): void {
     FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);
@@ -103,7 +103,7 @@ test('commission calculation persists exactly one new record with all required f
 test('GET /api/v1/calculations returns records ordered by calculated_at descending', function (): void {
     /** @var FormulaVersion $formula */
     $formula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.05',
+        'expression' => 'annual_usage * 0.05',
         'variables' => [],
         'is_active' => true,
     ]);
@@ -178,14 +178,14 @@ test('activating formula version B deactivates version A and only one version is
 test('simulation does not create commission_calculations records', function (): void {
     /** @var FormulaVersion $activeFormula */
     $activeFormula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.05',
+        'expression' => 'annual_usage * 0.05',
         'variables' => [],
         'is_active' => true,
     ]);
 
     /** @var FormulaVersion $targetFormula */
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.06',
+        'expression' => 'annual_usage * 0.06',
         'variables' => [],
         'is_active' => false,
     ]);
@@ -208,12 +208,12 @@ test('simulation does not create commission_calculations records', function (): 
 // ---------------------------------------------------------------------------
 
 test('formula with intermediate variables evaluated in topological order produces correct result', function (): void {
-    // BaseCommission = AnnualUsage * 0.05
-    // AdjustedCommission = BaseCommission * 1.1
-    // Final = AdjustedCommission + (ContractLength * 10)
+    // base_commission = annual_usage * 0.05
+    // AdjustedCommission = base_commission * 1.1
+    // Final = AdjustedCommission + (contract_length * 10)
     //
-    // With AnnualUsage=10000, ContractLength=12:
-    //   BaseCommission     = 10000 * 0.05       = 500
+    // With annual_usage=10000, contract_length=12:
+    //   base_commission     = 10000 * 0.05       = 500
     //   AdjustedCommission = 500 * 1.1          = 550
     //   Final              = 550 + (12 * 10)    = 670
 
@@ -222,11 +222,11 @@ test('formula with intermediate variables evaluated in topological order produce
     // Declare variables in REVERSE dependency order to prove topological sort
     /** @var FormulaVersion $formula */
     $formula = FormulaVersion::factory()->create([
-        'expression' => 'AdjustedCommission + (ContractLength * 10)',
+        'expression' => 'AdjustedCommission + (contract_length * 10)',
         'variables' => [
-            // AdjustedCommission declared BEFORE BaseCommission intentionally
-            ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 1.1'],
-            ['name' => 'BaseCommission',      'expression' => 'AnnualUsage * 0.05'],
+            // AdjustedCommission declared BEFORE base_commission intentionally
+            ['name' => 'AdjustedCommission', 'expression' => 'base_commission * 1.1'],
+            ['name' => 'base_commission',      'expression' => 'annual_usage * 0.05'],
         ],
         'is_active' => true,
     ]);
@@ -255,9 +255,9 @@ test('formula with intermediate variables evaluated in topological order produce
 test('calculation_steps contains one entry per intermediate variable plus RESULT', function (): void {
     /** @var FormulaVersion $formula */
     $formula = FormulaVersion::factory()->create([
-        'expression' => 'BaseCommission * 1.1',
+        'expression' => 'base_commission * 1.1',
         'variables' => [
-            ['name' => 'BaseCommission', 'expression' => 'AnnualUsage * 0.05'],
+            ['name' => 'base_commission', 'expression' => 'annual_usage * 0.05'],
         ],
         'is_active' => true,
     ]);
@@ -277,11 +277,11 @@ test('calculation_steps contains one entry per intermediate variable plus RESULT
     $steps = $record->calculation_steps;
     $stepVars = array_column($steps, 'variable');
 
-    expect($stepVars)->toContain('BaseCommission');
-    expect($stepVars)->toContain('RESULT');
+    expect($stepVars)->toContain('base_commission');
+    expect($stepVars)->toContain(CommissionCalculation::RESULT);
 
     // The RESULT step must be last
-    expect(end($stepVars))->toBe('RESULT');
+    expect(end($stepVars))->toBe(CommissionCalculation::RESULT);
 });
 
 // ---------------------------------------------------------------------------
@@ -293,14 +293,14 @@ test('calculation_steps contains one entry per intermediate variable plus RESULT
 test('simulation returns affected_contract_count, current_total_commission, new_total_commission, and difference', function (): void {
     /** @var FormulaVersion $activeFormula */
     FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.05',
+        'expression' => 'annual_usage * 0.05',
         'variables' => [],
         'is_active' => true,
     ]);
 
     /** @var FormulaVersion $targetFormula */
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.06',
+        'expression' => 'annual_usage * 0.06',
         'variables' => [],
         'is_active' => false,
     ]);
@@ -316,7 +316,7 @@ test('simulation returns affected_contract_count, current_total_commission, new_
 
     $response->assertSuccessful();
 
-    $body = $response->json();
+    dd($response->json());
 
     expect($body)->toHaveKeys([
         'affected_contract_count',
@@ -351,7 +351,7 @@ test('property-based: commission result matches PHP arithmetic for random non-ne
 ): void {
     // Fixed formula with no intermediates — simple linear combination
     FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);
@@ -398,7 +398,7 @@ test('property-based: input_values in audit record uses PascalCase keys matching
     float $riskScore,
 ): void {
     FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.05',
+        'expression' => 'annual_usage * 0.05',
         'variables' => [],
         'is_active' => true,
     ]);
@@ -419,17 +419,17 @@ test('property-based: input_values in audit record uses PascalCase keys matching
 
     // Must use PascalCase keys
     expect($inputValues)->toHaveKeys([
-        'AnnualUsage',
-        'ContractValue',
-        'ContractLength',
-        'RiskScore',
+        'annual_usage',
+        'contract_value',
+        'contract_length',
+        'risk_score',
     ]);
 
     // Values must match what was stored on the contract
-    expect((float) $inputValues['AnnualUsage'])->toBe((float) $annualUsage);
-    expect((float) $inputValues['ContractValue'])->toBe((float) $contractValue);
-    expect((int) $inputValues['ContractLength'])->toBe($contractLength);
-    expect((float) $inputValues['RiskScore'])->toBe((float) $riskScore);
+    expect((float) $inputValues['annual_usage'])->toBe((float) $annualUsage);
+    expect((float) $inputValues['contract_value'])->toBe((float) $contractValue);
+    expect((int) $inputValues['contract_length'])->toBe($contractLength);
+    expect((float) $inputValues['risk_score'])->toBe((float) $riskScore);
 })->with([
     'standard contract' => [10000.0, 50000.0, 24, 3.5],
     'zero values' => [0.0, 0.0, 0, 0.0],

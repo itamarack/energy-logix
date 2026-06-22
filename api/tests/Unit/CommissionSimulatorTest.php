@@ -31,7 +31,7 @@ function makeSimulator(): CommissionSimulator
 
 /**
  * Compute the expected commission for a single contract using PHP arithmetic.
- * Formula: (AnnualUsage * 0.05) + (ContractLength * 100)
+ * Formula: (annual_usage * 0.05) + (contract_length * 100)
  */
 function expectedCommission(Contract $contract): float
 {
@@ -44,7 +44,7 @@ function expectedCommission(Contract $contract): float
 
 it('returns affected_contract_count equal to the number of contracts in the database', function (): void {
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => false,
     ]);
@@ -62,16 +62,16 @@ it('returns affected_contract_count equal to the number of contracts in the data
 // -------------------------------------------------------------------------
 
 it('returns totals that match independently computed sums for both formulas', function (): void {
-    // Active formula: (AnnualUsage * 0.05) + (ContractLength * 100)
+    // Active formula: (annual_usage * 0.05) + (contract_length * 100)
     $activeFormula = FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);
 
-    // Target formula: AnnualUsage * 0.08
+    // Target formula: annual_usage * 0.08
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.08',
+        'expression' => 'annual_usage * 0.08',
         'variables' => [],
         'is_active' => false,
     ]);
@@ -104,13 +104,13 @@ it('returns totals that match independently computed sums for both formulas', fu
 
 it('returns difference equal to new_total_commission minus current_total_commission', function (): void {
     FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);
 
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.1',
+        'expression' => 'annual_usage * 0.1',
         'variables' => [],
         'is_active' => false,
     ]);
@@ -133,13 +133,13 @@ it('returns difference equal to new_total_commission minus current_total_commiss
 
 it('does not create any commission_calculations records during simulation', function (): void {
     FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => true,
     ]);
 
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.07',
+        'expression' => 'annual_usage * 0.07',
         'variables' => [],
         'is_active' => false,
     ]);
@@ -159,7 +159,7 @@ it('does not create any commission_calculations records during simulation', func
 
 it('returns zeroes for all totals when no contracts exist', function (): void {
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
         'is_active' => false,
     ]);
@@ -182,7 +182,7 @@ it('returns zeroes for all totals when no contracts exist', function (): void {
 it('returns 0 for current_total_commission when no active formula exists', function (): void {
     // No active formula at all
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.05',
+        'expression' => 'annual_usage * 0.05',
         'variables' => [],
         'is_active' => false,
     ]);
@@ -210,18 +210,18 @@ it('returns 0 for current_total_commission when no active formula exists', funct
 it('handles intermediate variables correctly during simulation without persisting records', function (): void {
     // Active formula: simple
     FormulaVersion::factory()->create([
-        'expression' => 'AnnualUsage * 0.05',
+        'expression' => 'annual_usage * 0.05',
         'variables' => [],
         'is_active' => true,
     ]);
 
     // Target formula with one intermediate variable
-    // BaseCommission = AnnualUsage * 0.05
-    // Result = BaseCommission + (ContractLength * 50)
+    // base_commission = annual_usage * 0.05
+    // Result = base_commission + (contract_length * 50)
     $targetFormula = FormulaVersion::factory()->create([
-        'expression' => 'BaseCommission + (ContractLength * 50)',
+        'expression' => 'base_commission + (contract_length * 50)',
         'variables' => [
-            ['name' => 'BaseCommission', 'expression' => 'AnnualUsage * 0.05'],
+            ['name' => 'base_commission', 'expression' => 'annual_usage * 0.05'],
         ],
         'is_active' => false,
     ]);
@@ -240,7 +240,7 @@ it('handles intermediate variables correctly during simulation without persistin
     // No records written
     expect(CommissionCalculation::count())->toBe($countBefore);
 
-    // BaseCommission = 10000 * 0.05 = 500; Result = 500 + (12 * 50) = 500 + 600 = 1100
+    // base_commission = 10000 * 0.05 = 500; Result = 500 + (12 * 50) = 500 + 600 = 1100
     $expectedNew = 2 * 1100.0;
     expect($result->new_total_commission)->toEqual($expectedNew);
     expect($result->affected_contract_count)->toBe(2);

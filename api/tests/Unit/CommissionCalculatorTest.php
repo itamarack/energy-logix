@@ -31,7 +31,7 @@ function makeCalculator(): CommissionCalculator
 
 it('evaluates a simple formula and returns the correct numeric result', function (): void {
     $formula = FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
     ]);
 
@@ -51,14 +51,14 @@ it('evaluates a simple formula and returns the correct numeric result', function
 // -------------------------------------------------------------------------
 
 it('evaluates a formula with two intermediates and records correct calculation steps', function (): void {
-    // BaseCommission = AnnualUsage * 0.05
-    // AdjustedCommission = BaseCommission * 1.1
-    // Result = AdjustedCommission + (ContractLength * 50)
+    // base_commission = annual_usage * 0.05
+    // AdjustedCommission = base_commission * 1.1
+    // Result = AdjustedCommission + (contract_length * 50)
     $formula = FormulaVersion::factory()->create([
-        'expression' => 'AdjustedCommission + (ContractLength * 50)',
+        'expression' => 'AdjustedCommission + (contract_length * 50)',
         'variables' => [
-            ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 1.1'],
-            ['name' => 'BaseCommission', 'expression' => 'AnnualUsage * 0.05'],
+            ['name' => 'AdjustedCommission', 'expression' => 'base_commission * 1.1'],
+            ['name' => 'base_commission', 'expression' => 'annual_usage * 0.05'],
         ],
     ]);
 
@@ -67,7 +67,7 @@ it('evaluates a formula with two intermediates and records correct calculation s
         'contract_length' => 12,
     ]);
 
-    // BaseCommission = 20000 * 0.05 = 1000
+    // base_commission = 20000 * 0.05 = 1000
     // AdjustedCommission = 1000 * 1.1 = 1100
     // Result = 1100 + (12 * 50) = 1100 + 600 = 1700
     $calculation = makeCalculator()->calculate($formula, $contract);
@@ -79,16 +79,16 @@ it('evaluates a formula with two intermediates and records correct calculation s
     // Intermediates first, then RESULT — three entries total
     expect($steps)->toHaveCount(3);
 
-    // BaseCommission must be evaluated before AdjustedCommission
+    // base_commission must be evaluated before AdjustedCommission
     $variables = array_column($steps, 'variable');
-    $baseIdx = array_search('BaseCommission', $variables);
+    $baseIdx = array_search('base_commission', $variables);
     $adjustedIdx = array_search('AdjustedCommission', $variables);
     $resultIdx = array_search('RESULT', $variables);
 
     expect($baseIdx)->toBeLessThan($adjustedIdx)
         ->and($adjustedIdx)->toBeLessThan($resultIdx);
 
-    expect($steps[$resultIdx]['expression'])->toBe('AdjustedCommission + (ContractLength * 50)');
+    expect($steps[$resultIdx]['expression'])->toBe('AdjustedCommission + (contract_length * 50)');
     // JSON round-trip may return int/float; use toEqual for numeric comparison
     expect((float) $steps[$resultIdx]['value'])->toEqual(1700.0);
 });
@@ -99,7 +99,7 @@ it('evaluates a formula with two intermediates and records correct calculation s
 
 it('persists a CommissionCalculation audit record with all required fields', function (): void {
     $formula = FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
     ]);
 
@@ -123,15 +123,15 @@ it('persists a CommissionCalculation audit record with all required fields', fun
 
     // input_values uses PascalCase keys
     $inputValues = $calculation->input_values;
-    expect($inputValues)->toHaveKey('AnnualUsage')
-        ->and($inputValues)->toHaveKey('ContractValue')
-        ->and($inputValues)->toHaveKey('ContractLength')
-        ->and($inputValues)->toHaveKey('RiskScore');
+    expect($inputValues)->toHaveKey('annual_usage')
+        ->and($inputValues)->toHaveKey('contract_value')
+        ->and($inputValues)->toHaveKey('contract_length')
+        ->and($inputValues)->toHaveKey('risk_score');
 
-    expect($inputValues['AnnualUsage'])->toEqual(5000.0)
-        ->and($inputValues['ContractValue'])->toEqual(50000.0)
-        ->and($inputValues['ContractLength'])->toEqual(36)
-        ->and($inputValues['RiskScore'])->toEqual(3.5);
+    expect($inputValues['annual_usage'])->toEqual(5000.0)
+        ->and($inputValues['contract_value'])->toEqual(50000.0)
+        ->and($inputValues['contract_length'])->toEqual(36)
+        ->and($inputValues['risk_score'])->toEqual(3.5);
 
     // calculation_steps ends with RESULT entry
     $steps = $calculation->calculation_steps;
@@ -152,7 +152,7 @@ it('persists a CommissionCalculation audit record with all required fields', fun
 
 it('handles a contract with zero annual_usage and contract_length without crashing', function (): void {
     $formula = FormulaVersion::factory()->create([
-        'expression' => '(AnnualUsage * 0.05) + (ContractLength * 100)',
+        'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
     ]);
 

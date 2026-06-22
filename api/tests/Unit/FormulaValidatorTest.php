@@ -20,19 +20,19 @@ beforeEach(function (): void {
 // -------------------------------------------------------------------------
 
 it('passes for a valid simple formula with no intermediate variables', function (): void {
-    expect(fn () => $this->validator->validate('AnnualUsage * 0.05', []))->not->toThrow(Throwable::class);
+    expect(fn () => $this->validator->validate('annual_usage * 0.05', []))->not->toThrow(Throwable::class);
 });
 
 it('passes for a valid formula referencing a single valid intermediate variable', function (): void {
-    expect(fn () => $this->validator->validate('BaseCommission * 1.1', [
-        ['name' => 'BaseCommission', 'expression' => 'AnnualUsage * 0.05'],
+    expect(fn () => $this->validator->validate('base_commission * 1.1', [
+        ['name' => 'base_commission', 'expression' => 'annual_usage * 0.05'],
     ]))->not->toThrow(Throwable::class);
 });
 
 it('passes for a valid formula with multiple chained intermediate variables', function (): void {
     expect(fn () => $this->validator->validate('AdjustedCommission + 500', [
-        ['name' => 'BaseCommission', 'expression' => 'AnnualUsage * 0.05'],
-        ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * RiskScore'],
+        ['name' => 'base_commission', 'expression' => 'annual_usage * 0.05'],
+        ['name' => 'AdjustedCommission', 'expression' => 'base_commission * risk_score'],
     ]))->not->toThrow(Throwable::class);
 });
 
@@ -41,13 +41,13 @@ it('passes for a valid formula with multiple chained intermediate variables', fu
 // -------------------------------------------------------------------------
 
 it('raises ParseException for a syntax error in the main expression', function (): void {
-    expect(fn () => $this->validator->validate('AnnualUsage ** ContractValue', []))
+    expect(fn () => $this->validator->validate('annual_usage ** contract_value', []))
         ->toThrow(ParseException::class);
 });
 
 it('raises ParseException for a syntax error in an intermediate variable expression', function (): void {
-    expect(fn () => $this->validator->validate('BaseCommission * 1.1', [
-        ['name' => 'BaseCommission', 'expression' => 'AnnualUsage ** 2'],
+    expect(fn () => $this->validator->validate('base_commission * 1.1', [
+        ['name' => 'base_commission', 'expression' => 'annual_usage ** 2'],
     ]))->toThrow(ParseException::class);
 });
 
@@ -57,17 +57,17 @@ it('raises ParseException for a syntax error in an intermediate variable express
 
 it('raises UndefinedVariableException for an undefined variable in the main expression', function (): void {
     try {
-        $this->validator->validate('AnnualUsage * PeakDemand', []);
+        $this->validator->validate('annual_usage * peak_demand', []);
         $this->fail('Expected UndefinedVariableException to be thrown');
     } catch (UndefinedVariableException $e) {
-        expect($e->getMessage())->toContain('PeakDemand');
+        expect($e->getMessage())->toContain('peak_demand');
     }
 });
 
 it('raises UndefinedVariableException when an intermediate variable references an undeclared identifier', function (): void {
     // Ghost is not declared as an intermediate and is not a base input
-    expect(fn () => $this->validator->validate('BaseCommission * 1.1', [
-        ['name' => 'BaseCommission', 'expression' => 'Ghost * 0.05'],
+    expect(fn () => $this->validator->validate('base_commission * 1.1', [
+        ['name' => 'base_commission', 'expression' => 'Ghost * 0.05'],
     ]))->toThrow(UndefinedVariableException::class);
 });
 
@@ -76,23 +76,23 @@ it('raises UndefinedVariableException when an intermediate variable references a
 // -------------------------------------------------------------------------
 
 it('raises CircularDependencyException for a 2-node cycle between intermediate variables', function (): void {
-    expect(fn () => $this->validator->validate('BaseCommission * 1.0', [
-        ['name' => 'BaseCommission', 'expression' => 'AdjustedCommission * 1.1'],
-        ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 0.9'],
+    expect(fn () => $this->validator->validate('base_commission * 1.0', [
+        ['name' => 'base_commission', 'expression' => 'AdjustedCommission * 1.1'],
+        ['name' => 'AdjustedCommission', 'expression' => 'base_commission * 0.9'],
     ]))->toThrow(CircularDependencyException::class);
 });
 
 it('names cycle members in the CircularDependencyException message', function (): void {
     try {
-        $this->validator->validate('BaseCommission * 1.0', [
-            ['name' => 'BaseCommission', 'expression' => 'AdjustedCommission * 1.1'],
-            ['name' => 'AdjustedCommission', 'expression' => 'BaseCommission * 0.9'],
+        $this->validator->validate('base_commission * 1.0', [
+            ['name' => 'base_commission', 'expression' => 'AdjustedCommission * 1.1'],
+            ['name' => 'AdjustedCommission', 'expression' => 'base_commission * 0.9'],
         ]);
 
         $this->fail('Expected CircularDependencyException to be thrown');
     } catch (CircularDependencyException $e) {
         expect($e->getMessage())
-            ->toContain('BaseCommission')
+            ->toContain('base_commission')
             ->toContain('AdjustedCommission');
     }
 });
