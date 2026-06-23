@@ -4,6 +4,8 @@ import { useRoute } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import AppLayout from '@/layouts/AppLayout.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
+import StatCard from '@/components/StatCard.vue'
 import { formulaVersionsApi } from '@/api/formulaVersions'
 import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 import type { SimulationResult } from '@/types'
@@ -79,16 +81,7 @@ function formatCurrency(value: number) {
           <div class="mt-1 flex flex-wrap items-center gap-4">
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ formulaVersion.name }}</h1>
             <span class="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-[13px] font-bold text-slate-600 ring-1 ring-inset ring-slate-500/10">v{{ formulaVersion.version_number }}</span>
-            <span
-              :class="formulaVersion.is_active ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20' : 'bg-slate-100/80 text-slate-600'"
-              class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider"
-            >
-              <span v-if="formulaVersion.is_active" class="mr-2 relative flex h-2 w-2">
-                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-              </span>
-              {{ formulaVersion.is_active ? 'Active' : 'Inactive' }}
-            </span>
+            <StatusBadge :active="formulaVersion.is_active" />
           </div>
         </template>
         <template #description>
@@ -162,27 +155,14 @@ function formatCurrency(value: number) {
               {{ simulationError }}
             </div>
 
-            <div v-if="simulationResult" class="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
-              <div class="premium-card !p-5">
-                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Affected Contracts</p>
-                <p class="mt-3 text-3xl font-black text-slate-900">{{ simulationResult.affected_contract_count }}</p>
-              </div>
-              <div class="premium-card !p-5">
-                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Current Total</p>
-                <p class="mt-3 font-mono text-3xl font-black text-slate-500">{{ formatCurrency(simulationResult.current_total_commission) }}</p>
-              </div>
-              <div class="premium-card !p-5">
-                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">New Total</p>
-                <p class="mt-3 font-mono text-3xl font-black text-indigo-600">{{ formatCurrency(simulationResult.new_total_commission) }}</p>
-              </div>
-              <div class="premium-card !p-5 relative overflow-hidden">
-                <div class="absolute right-0 top-0 h-full w-2" :class="simulationResult.difference >= 0 ? 'bg-emerald-500' : 'bg-red-500'"></div>
-                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Difference</p>
-                <p class="mt-3 font-mono text-3xl font-black" :class="simulationResult.difference >= 0 ? 'text-emerald-600' : 'text-red-600'">
-                  <span class="text-xl">{{ simulationResult.difference >= 0 ? '▲' : '▼' }}</span>
-                  {{ formatCurrency(Math.abs(simulationResult.difference)) }}
-                </p>
-              </div>
+            <div v-if="simulationResult" class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <StatCard title="Affected Contracts" :value="simulationResult.affected_contract_count" />
+              <StatCard title="Current Total" :value="formatCurrency(simulationResult.current_total_commission)" />
+              <StatCard title="New Total" :value="formatCurrency(simulationResult.new_total_commission)" />
+              <StatCard 
+                title="Difference" 
+                :value="(simulationResult.difference > 0 ? '+' : '') + formatCurrency(simulationResult.difference)" 
+              />
             </div>
           </div>
         </div>

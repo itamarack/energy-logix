@@ -2,6 +2,7 @@
 import { computed, ref, h, defineComponent } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 import { useFormulaVersions, useActivateFormulaVersion, useDeactivateFormulaVersion } from '@/composables/queries/useFormulaVersions'
@@ -47,16 +48,7 @@ const columns = [
     header: 'Status',
     cell: info => {
       const isActive = info.getValue()
-      if (isActive) {
-        return h('span', { class: 'inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-600/20' }, [
-          h('span', { class: 'mr-2 relative flex h-2 w-2' }, [
-            h('span', { class: 'absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75' }),
-            h('span', { class: 'relative inline-flex h-2 w-2 rounded-full bg-emerald-500' })
-          ]),
-          'Active'
-        ])
-      }
-      return h('span', { class: 'inline-flex items-center rounded-full bg-slate-100/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-600' }, 'Inactive')
+      return h(StatusBadge, { active: isActive })
     },
   }),
   columnHelper.accessor('created_at', {

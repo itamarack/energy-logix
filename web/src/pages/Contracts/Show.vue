@@ -3,6 +3,7 @@ import { computed, ref, h, defineComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppLayout from '@/layouts/AppLayout.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import StatCard from '@/components/StatCard.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 import { useContract, useContractCalculations, useCalculateContract } from '@/composables/queries/useContracts'
@@ -153,22 +154,10 @@ const table = useVueTable({
         </div>
 
         <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div class="premium-card !p-5">
-            <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Annual Usage</p>
-            <p class="mt-2 text-lg font-bold text-slate-900">{{ contract.annual_usage.toLocaleString('en-US') }} <span class="text-xs font-normal text-slate-400">kWh</span></p>
-          </div>
-          <div class="premium-card !p-5">
-            <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Contract Value</p>
-            <p class="mt-2 text-lg font-bold text-slate-900">{{ formatCurrency(contract.contract_value) }}</p>
-          </div>
-          <div class="premium-card !p-5">
-            <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Length</p>
-            <p class="mt-2 text-lg font-bold text-slate-900">{{ contract.contract_length }} <span class="text-xs font-normal text-slate-400">months</span></p>
-          </div>
-          <div class="premium-card !p-5">
-            <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Risk Score</p>
-            <p class="mt-2 text-lg font-bold text-slate-900">{{ contract.risk_score }} <span class="text-xs font-normal text-slate-400">/ 10</span></p>
-          </div>
+          <StatCard title="Annual Usage" :value="contract.annual_usage.toLocaleString('en-US')" suffix="kWh" />
+          <StatCard title="Contract Value" :value="formatCurrency(contract.contract_value)" />
+          <StatCard title="Length" :value="contract.contract_length" suffix="months" />
+          <StatCard title="Risk Score" :value="contract.risk_score" suffix="/ 10" />
         </div>
 
         <div class="mb-3 text-[13px] font-bold uppercase tracking-widest text-slate-400">Calculation History</div>
