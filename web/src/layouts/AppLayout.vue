@@ -6,10 +6,14 @@ const route = useRoute()
 
 const { isError, isLoading } = useHealthCheck()
 
+import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
+import { CONTRACT_ROUTES } from '@/routes/paths/contractRoutes'
+import { CALCULATION_ROUTES } from '@/routes/paths/calculationRoutes'
+
 const navLinks = [
-  { label: 'Formula Versions', to: '/formula-versions' },
-  { label: 'Contracts', to: '/contracts' },
-  { label: 'Calculations', to: '/calculations' },
+  { label: 'Formula Versions', to: FORMULA_VERSION_ROUTES.INDEX },
+  { label: 'Contracts', to: CONTRACT_ROUTES.INDEX },
+  { label: 'Calculations', to: CALCULATION_ROUTES.INDEX },
 ]
 
 function isActive(path: string): boolean {
