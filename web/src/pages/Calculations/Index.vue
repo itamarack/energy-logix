@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, h, defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
+import { exportCalculationCsv } from '@/utils/exportCalculationCsv'
+import { formatCurrency } from '@/utils/formatCurrency'
 import AppLayout from '@/layouts/AppLayout.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 import { useCalculations } from '@/composables/queries/useCalculations'
@@ -23,32 +26,7 @@ const { data: calculationsData, isLoading, isFetching } = useCalculations(page)
 const calculations = computed(() => calculationsData.value?.data ?? [])
 const pagination = computed(() => calculationsData.value?.meta)
 
-function formatCurrency(value: number) {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-}
 
-function exportCsv(calc: CommissionCalculation) {
-  const rows = [
-    ['Field', 'Value'],
-    ['ID', calc.id],
-    ['Contract', calc.contract?.name ?? ''],
-    ['Formula Version', calc.formula_version?.name ?? ''],
-    ['Formula Version #', calc.formula_version?.version_number ?? ''],
-    ['Commission Result', formatCurrency(calc.result)],
-    ['Calculated At', new Date(calc.calculated_at).toLocaleString()],
-    ['', ''],
-    ['Step', 'Variable', 'Expression', 'Value'],
-    ...(calc.calculation_steps ?? []).map(s => [s.step, s.variable, s.expression, s.value]),
-  ]
-  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `calculation-${calc.id}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 const columnHelper = createColumnHelper<CommissionCalculation>()
 
@@ -102,7 +80,7 @@ const columns = [
                 h('button', {
                   type: 'button',
                   class: 'flex w-full items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50',
-                  onClick: () => exportCsv(calc),
+                  onClick: () => exportCalculationCsv(calc),
                 }, [
                   h('svg', { class: 'h-4 w-4 text-slate-400', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.5', viewBox: '0 0 24 24' }, [
                     h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3' }),
@@ -129,14 +107,10 @@ const table = useVueTable({
 
 <template>
   <AppLayout>
-    <div class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <h1 class="text-2xl font-semibold text-slate-900">Commission Calculations</h1>
-        <p class="mt-1 text-sm text-slate-500">Immutable audit trail of all commission records.</p>
-      </div>
-    </div>
-
-
+    <PageHeader 
+      title="Commission Calculations" 
+      description="Immutable audit trail of all commission records." 
+    />
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <DataTable

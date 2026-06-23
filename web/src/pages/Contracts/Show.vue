@@ -2,6 +2,7 @@
 import { computed, ref, h, defineComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppLayout from '@/layouts/AppLayout.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 import { useContract, useContractCalculations, useCalculateContract } from '@/composables/queries/useContracts'
@@ -111,36 +112,35 @@ const table = useVueTable({
     </div>
 
     <template v-else-if="contract">
-      <div class="border-b border-slate-200 bg-white">
-        <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div class="flex items-start justify-between">
-            <div>
-              <div class="mb-1 flex items-center gap-2 text-sm text-slate-500">
-                <RouterLink :to="CONTRACT_ROUTES.INDEX" class="hover:text-blue-600">Contracts</RouterLink>
-                <span>/</span>
-                <span>{{ contract.name }}</span>
-              </div>
-              <h1 class="text-2xl font-semibold text-slate-900">{{ contract.name }}</h1>
-              <p class="mt-1 text-sm text-slate-500">Commission calculation history for this contract.</p>
-            </div>
-            <button
-              type="button"
-              :disabled="isCalculating"
-              class="premium-button"
-              @click="calculate"
-            >
-              <svg v-if="isCalculating" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-              </svg>
-              <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.82m2.56-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-              </svg>
-              {{ isCalculating ? 'Calculating…' : 'Calculate Now' }}
-            </button>
+      <PageHeader 
+        :title="contract.name" 
+        description="Commission calculation history for this contract."
+      >
+        <template #breadcrumbs>
+          <div class="mb-1 flex items-center gap-2 text-sm text-slate-500">
+            <RouterLink :to="CONTRACT_ROUTES.INDEX" class="hover:text-blue-600">Contracts</RouterLink>
+            <span>/</span>
+            <span>{{ contract.name }}</span>
           </div>
-        </div>
-      </div>
+        </template>
+        <template #actions>
+          <button
+            type="button"
+            :disabled="isCalculating"
+            class="premium-button"
+            @click="calculate"
+          >
+            <svg v-if="isCalculating" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.82m2.56-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+            </svg>
+            {{ isCalculating ? 'Calculating…' : 'Calculate Now' }}
+          </button>
+        </template>
+      </PageHeader>
 
       <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div v-if="noActiveFormulaError" class="mb-4 flex items-start justify-between rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">

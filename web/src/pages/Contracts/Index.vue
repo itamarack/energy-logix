@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, h, defineComponent } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 import { useContracts, useCalculateContract } from '@/composables/queries/useContracts'
@@ -142,12 +143,10 @@ const table = useVueTable({
 
 <template>
   <AppLayout>
-    <div class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <h1 class="text-2xl font-semibold text-slate-900">Contracts</h1>
-        <p class="mt-1 text-sm text-slate-500">Manage your energy supply contracts.</p>
-      </div>
-    </div>
+    <PageHeader 
+      title="Contracts" 
+      description="Manage your energy supply contracts." 
+    />
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div v-if="noActiveFormulaError" class="mb-4 flex items-start justify-between rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">

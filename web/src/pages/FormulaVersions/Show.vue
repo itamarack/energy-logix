@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import AppLayout from '@/layouts/AppLayout.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { formulaVersionsApi } from '@/api/formulaVersions'
 import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 import type { SimulationResult } from '@/types'
@@ -65,14 +66,16 @@ function formatCurrency(value: number) {
     </div>
 
     <template v-else-if="formulaVersion">
-      <div class="border-b border-slate-200 bg-white">
-        <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <PageHeader>
+        <template #breadcrumbs>
           <RouterLink :to="FORMULA_VERSION_ROUTES.INDEX" class="mb-3 inline-flex items-center text-[13px] font-bold uppercase tracking-widest text-slate-500 hover:text-indigo-600 transition-colors">
             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Formula Versions
           </RouterLink>
+        </template>
+        <template #title>
           <div class="mt-1 flex flex-wrap items-center gap-4">
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ formulaVersion.name }}</h1>
             <span class="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-[13px] font-bold text-slate-600 ring-1 ring-inset ring-slate-500/10">v{{ formulaVersion.version_number }}</span>
@@ -86,26 +89,31 @@ function formatCurrency(value: number) {
               </span>
               {{ formulaVersion.is_active ? 'Active' : 'Inactive' }}
             </span>
-            <RouterLink :to="FORMULA_VERSION_ROUTES.EDIT(formulaVersion.id)" class="ml-auto premium-button-secondary !px-4 !py-2 !text-[13px]">
-              Edit Formula
-            </RouterLink>
-            <a 
-              v-if="!formulaVersion.is_active" 
-              :href="`/api/v1/formula-versions/${formulaVersion.id}/report`" 
-              class="premium-button-secondary !bg-white hover:!bg-slate-50 !px-4 !py-2 !text-[13px]"
-              download
-            >
-              Download Closing Report
-            </a>
-            <button v-if="!formulaVersion.is_active" type="button" class="premium-button !px-4 !py-2 !text-[13px]" @click="activate()">
-              Activate Formula
-            </button>
-            <button v-else type="button" class="premium-button-secondary !px-4 !py-2 !text-[13px]" @click="deactivate()">
-              Deactivate Formula
-            </button>
           </div>
-        </div>
-      </div>
+        </template>
+        <template #description>
+          <p v-if="formulaVersion.description" class="mt-2 text-sm text-slate-500">{{ formulaVersion.description }}</p>
+        </template>
+        <template #actions>
+          <RouterLink :to="FORMULA_VERSION_ROUTES.EDIT(formulaVersion.id)" class="premium-button-secondary !px-4 !py-2 !text-[13px]">
+            Edit Formula
+          </RouterLink>
+          <a 
+            v-if="!formulaVersion.is_active" 
+            :href="`/api/v1/formula-versions/${formulaVersion.id}/report`" 
+            class="premium-button-secondary !bg-white hover:!bg-slate-50 !px-4 !py-2 !text-[13px]"
+            download
+          >
+            Download Closing Report
+          </a>
+          <button v-if="!formulaVersion.is_active" type="button" class="premium-button !px-4 !py-2 !text-[13px]" @click="activate()">
+            Activate Version
+          </button>
+          <button v-else type="button" class="premium-button !bg-rose-500 !shadow-rose-500/30 hover:!bg-rose-600 !px-4 !py-2 !text-[13px]" @click="deactivate()">
+            Deactivate
+          </button>
+        </template>
+      </PageHeader>
 
       <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div class="premium-card overflow-hidden">

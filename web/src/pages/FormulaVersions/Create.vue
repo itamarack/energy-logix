@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/vue-query'
 import Tribute from 'tributejs'
 import 'tributejs/dist/tribute.css'
 import AppLayout from '@/layouts/AppLayout.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { formulaVersionsApi } from '@/api/formulaVersions'
 import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 import { useFormulaVariables } from '@/composables/queries/useFormulaVariables'
@@ -131,8 +132,8 @@ function handleSubmit() {
 
 <template>
   <AppLayout>
-    <div class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <PageHeader title="New Formula Version">
+      <template #breadcrumbs>
         <RouterLink
           :to="FORMULA_VERSION_ROUTES.INDEX"
           class="mb-3 inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600"
@@ -142,9 +143,8 @@ function handleSubmit() {
           </svg>
           Formula Versions
         </RouterLink>
-        <h1 class="mt-1 text-2xl font-semibold text-slate-900">New Formula Version</h1>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <form @submit.prevent="handleSubmit">

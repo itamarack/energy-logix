@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, h, defineComponent } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 import { useFormulaVersions, useActivateFormulaVersion, useDeactivateFormulaVersion } from '@/composables/queries/useFormulaVersions'
@@ -133,27 +134,22 @@ const table = useVueTable({
 
 <template>
   <AppLayout>
-    <div class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div class="flex items-start justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Formula Versions</h1>
-            <p class="mt-1 text-sm text-slate-500">
-              Manage and version your commission calculation formulas
-            </p>
-          </div>
-          <RouterLink
-            :to="FORMULA_VERSION_ROUTES.CREATE"
-            class="premium-button"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            New Formula
-          </RouterLink>
-        </div>
-      </div>
-    </div>
+    <PageHeader 
+      title="Formula Versions" 
+      description="Manage and version your commission calculation formulas"
+    >
+      <template #actions>
+        <RouterLink
+          :to="FORMULA_VERSION_ROUTES.CREATE"
+          class="premium-button"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          New Formula
+        </RouterLink>
+      </template>
+    </PageHeader>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <DataTable
