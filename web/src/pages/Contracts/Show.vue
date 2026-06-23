@@ -103,7 +103,6 @@ const table = useVueTable({
 
 <template>
   <AppLayout>
-    <!-- Loading skeleton -->
     <div v-if="contractLoading" class="border-b border-slate-200 bg-white">
       <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div class="h-4 w-24 animate-pulse rounded-full bg-slate-200/50" />
@@ -112,7 +111,6 @@ const table = useVueTable({
     </div>
 
     <template v-else-if="contract">
-      <!-- Header -->
       <div class="border-b border-slate-200 bg-white">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div class="flex items-start justify-between">
@@ -145,7 +143,6 @@ const table = useVueTable({
       </div>
 
       <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <!-- No active formula error -->
         <div v-if="noActiveFormulaError" class="mb-4 flex items-start justify-between rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           <span>No active formula version — please activate one first.</span>
           <button type="button" class="ml-4 shrink-0 text-amber-600 hover:text-amber-900" @click="noActiveFormulaError = false">
@@ -155,7 +152,6 @@ const table = useVueTable({
           </button>
         </div>
 
-        <!-- Contract details -->
         <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div class="premium-card !p-5">
             <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Annual Usage</p>
@@ -175,7 +171,6 @@ const table = useVueTable({
           </div>
         </div>
 
-        <!-- Calculation history -->
         <div class="mb-3 text-[13px] font-bold uppercase tracking-widest text-slate-400">Calculation History</div>
         <DataTable
           :table="table"

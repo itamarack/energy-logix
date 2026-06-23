@@ -19,11 +19,9 @@ function isActive(path: string): boolean {
 
 <template>
   <div class="flex min-h-screen flex-col">
-    <!-- Top navigation -->
     <header class="sticky top-0 z-40 border-b border-white/20 bg-white/70 backdrop-blur-xl">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
-          <!-- Logo -->
           <RouterLink to="/" class="group flex items-center gap-3">
             <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-blue-500 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
               <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -36,7 +34,6 @@ function isActive(path: string): boolean {
             </div>
           </RouterLink>
 
-          <!-- Nav links -->
           <nav class="hidden items-center gap-2 md:flex">
             <RouterLink
               v-for="link in navLinks"
@@ -53,7 +50,6 @@ function isActive(path: string): boolean {
             </RouterLink>
           </nav>
 
-          <!-- Status indicator -->
           <div class="flex items-center gap-2">
             <span
               v-if="isLoading"
@@ -88,12 +84,10 @@ function isActive(path: string): boolean {
       </div>
     </header>
 
-    <!-- Page content -->
     <main class="flex-1">
       <slot />
     </main>
 
-    <!-- Footer -->
     <footer class="mt-auto border-t border-slate-200/60 bg-white/50 backdrop-blur-md py-8">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col items-center justify-between gap-4 md:flex-row">

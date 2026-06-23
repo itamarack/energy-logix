@@ -87,7 +87,6 @@ const pagesToDisplay = computed(() => {
       </table>
     </div>
 
-    <!-- Pagination Controls -->
     <div v-if="pagination" class="flex items-center justify-between border-t border-slate-100 bg-white px-6 py-3">
       <div class="flex flex-1 justify-between sm:hidden">
         <button @click="emit('update:page', page - 1)" :disabled="page === 1" class="relative inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>

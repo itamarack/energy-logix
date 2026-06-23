@@ -32,7 +32,7 @@ async function calculate(contractId: number) {
   noActiveFormulaError.value = false
   loadingIds.value = new Set([...loadingIds.value, contractId])
   try {
-    const calc = await calculateContract(contractId)
+    await calculateContract(contractId)
   } catch (err: unknown) {
     const e = err as Error & { status?: number }
     if (e.status === 422) {

@@ -57,7 +57,6 @@ function formatCurrency(value: number) {
 
 <template>
   <AppLayout>
-    <!-- Loading skeleton -->
     <div v-if="isLoading" class="premium-card m-4 sm:m-6 lg:m-8">
       <div class="px-6 py-8">
         <div class="h-4 w-32 animate-pulse rounded-full bg-slate-200/50" />
@@ -109,7 +108,6 @@ function formatCurrency(value: number) {
       </div>
 
       <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <!-- Expression -->
         <div class="premium-card overflow-hidden">
           <div class="border-b border-slate-200/50 bg-slate-50/50 px-6 py-4 text-[13px] font-bold uppercase tracking-widest text-slate-500">Expression</div>
           <div class="relative overflow-hidden bg-slate-50 px-6 py-5">
@@ -117,7 +115,6 @@ function formatCurrency(value: number) {
           </div>
         </div>
 
-        <!-- Intermediate Variables -->
         <div v-if="formulaVersion.variables?.length" class="premium-card">
           <div class="border-b border-slate-200/50 bg-slate-50/50 px-6 py-4 text-[13px] font-bold uppercase tracking-widest text-slate-500">Intermediate Variables</div>
           <div class="px-6 py-4">
@@ -138,7 +135,6 @@ function formatCurrency(value: number) {
           </div>
         </div>
 
-        <!-- Simulation -->
         <div class="premium-card">
           <div class="border-b border-slate-200/50 bg-slate-50/50 px-6 py-4 text-[13px] font-bold uppercase tracking-widest text-slate-500">Impact Simulation</div>
           <div class="px-6 py-6">

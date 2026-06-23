@@ -45,7 +45,6 @@ function exportCsv() {
 
 <template>
   <AppLayout>
-    <!-- Loading skeleton -->
     <div v-if="isLoading" class="premium-card m-4 sm:m-6 lg:m-8">
       <div class="px-6 py-8">
         <div class="h-4 w-48 animate-pulse rounded-full bg-slate-200/50" />
@@ -85,7 +84,6 @@ function exportCsv() {
       <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="lg:grid lg:grid-cols-3 lg:gap-8">
           <div class="space-y-6 lg:col-span-2">
-            <!-- Input Values -->
             <div class="premium-card">
               <div class="border-b border-slate-200/50 bg-slate-50/50 px-6 py-4 text-[13px] font-bold uppercase tracking-widest text-slate-500">Input Values</div>
               <div class="px-6 py-4">
@@ -100,7 +98,6 @@ function exportCsv() {
               </div>
             </div>
 
-            <!-- Calculation Steps -->
             <div class="premium-card">
               <div class="border-b border-slate-200/50 bg-slate-50/50 px-6 py-4 text-[13px] font-bold uppercase tracking-widest text-slate-500">Calculation Steps</div>
               <div class="px-6 py-4">
@@ -129,7 +126,6 @@ function exportCsv() {
           </div>
 
           <div class="mt-6 space-y-6 lg:col-span-1 lg:mt-0">
-            <!-- Result card -->
             <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800 p-8 text-center text-white">
               <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
               <div class="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-blue-400/20 blur-3xl"></div>
@@ -138,7 +134,6 @@ function exportCsv() {
               <p class="relative z-10 mt-4 text-[13px] font-medium text-indigo-200">Calculated {{ new Date(calculation.calculated_at).toLocaleString() }}</p>
             </div>
 
-            <!-- Summary -->
             <div class="premium-card">
               <div class="border-b border-slate-200/50 bg-slate-50/50 px-6 py-4 text-[13px] font-bold uppercase tracking-widest text-slate-500">Metadata</div>
               <div class="divide-y divide-slate-100/80">

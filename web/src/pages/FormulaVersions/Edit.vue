@@ -126,7 +126,7 @@ function handleSubmit() {
       id: formulaId,
       data: {
         name: form.value.name,
-        description: form.value.description || undefined,
+        description: form.value.description || null,
         expression: form.value.expression,
         variables: form.value.variables,
       },
@@ -174,7 +174,6 @@ function handleSubmit() {
         <div class="lg:grid lg:grid-cols-3 lg:gap-8">
           <div class="lg:col-span-2">
             <div class="premium-card p-6 sm:p-8">
-              <!-- Name -->
               <div class="mb-6">
                 <label for="name" class="block text-[13px] font-bold uppercase tracking-widest text-slate-500">
                   Name <span class="text-red-500">*</span>
@@ -189,7 +188,6 @@ function handleSubmit() {
                 <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
               </div>
 
-              <!-- Description -->
               <div class="mb-8">
                 <label for="description" class="block text-[13px] font-bold uppercase tracking-widest text-slate-500">Description</label>
                 <textarea
@@ -201,7 +199,6 @@ function handleSubmit() {
                 />
               </div>
 
-              <!-- Expression -->
               <div class="mb-8">
                 <label for="expression" class="block text-[13px] font-bold uppercase tracking-widest text-slate-500 mb-2">
                   Expression <span class="text-red-500">*</span>
@@ -223,7 +220,6 @@ function handleSubmit() {
                 <p v-if="errors.expression" class="mt-1 text-sm text-red-600">{{ errors.expression }}</p>
               </div>
 
-              <!-- Intermediate Variables -->
               <div>
                 <div class="mb-4 flex items-center justify-between">
                   <label class="block text-[13px] font-bold uppercase tracking-widest text-slate-500">Intermediate Variables</label>
@@ -286,7 +282,6 @@ function handleSubmit() {
             </div>
           </div>
 
-          <!-- Sidebar -->
           <div class="mt-6 lg:col-span-1 lg:mt-0">
             <div class="premium-card sticky top-24 p-6">
               <h2 class="mb-1 text-[13px] font-bold uppercase tracking-widest text-slate-500">Available Variables</h2>
