@@ -6,7 +6,7 @@ This document outlines the architectural decisions, system design, and technical
 
 ## 1. Backend Architecture (Laravel)
 
-The backend is built as a headless REST API using Laravel 11. We adhere strictly to SOLID principles, heavily decoupling business logic from the HTTP layer.
+The backend is built as a headless REST API using Laravel 11. I adhere strictly to SOLID principles, heavily decoupling business logic from the HTTP layer.
 
 ### Controllers & The HTTP Layer
 Controllers are kept extremely thin. They are solely responsible for:
@@ -16,7 +16,7 @@ Controllers are kept extremely thin. They are solely responsible for:
 4. Returning a standardized **JsonResource** (e.g., `ContractResource`).
 
 ### Data Transfer Objects (DTOs)
-We utilized Data Transfer Objects (`CommissionCalculationData`, `SimulationResult`) to strongly type data payloads passing between the calculation services and the controllers. This prevents array-shape ambiguity (so-called "array blindness") and ensures that our calculations have predictable, type-safe outputs.
+I utilized Data Transfer Objects (`CommissionCalculationData`, `SimulationResult`) to strongly type data payloads passing between the calculation services and the controllers. This prevents array-shape ambiguity (so-called "array blindness") and ensures that my calculations have predictable, type-safe outputs.
 
 ### Actions & Services
 Business logic is encapsulated in single-responsibility Action classes and Service classes.
@@ -52,7 +52,7 @@ To prevent infinite loops during calculation, the `DependencyResolver` ensures v
 
 ## 3. Database Schema
 
-We utilize **MySQL 8.0** for relational data integrity.
+I utilize **MySQL 8.0** for relational data integrity.
 
 ```mermaid
 erDiagram
@@ -104,8 +104,8 @@ Notice the use of `json` columns for `variables`, `input_values`, and `calculati
 The frontend is built as a Single Page Application (SPA) using **Vue 3** and **Vite**.
 
 ### State Management
-We utilize **TanStack Query (Vue Query)** for all remote state management and data fetching. 
-- **Why?** It automatically handles caching, background-refreshing, and loading states. When a mutation occurs (like activating a formula), we simply invalidate the `formulas` and `contracts` query keys, and Vue Query instantly re-fetches the fresh data, ensuring the UI is always perfectly synced with the backend without complex Vuex/Pinia stores.
+I utilize **TanStack Query (Vue Query)** for all remote state management and data fetching. 
+- **Why?** It automatically handles caching, background-refreshing, and loading states. When a mutation occurs (like activating a formula), I simply invalidate the `formulas` and `contracts` query keys, and Vue Query instantly re-fetches the fresh data, ensuring the UI is always perfectly synced with the backend without complex Vuex/Pinia stores.
 
 ### Component Structure
 - Components are modularized strictly into `pages/` (full route views) and `components/` (reusable UI elements like Modals, Tables, and Badges).
@@ -115,7 +115,14 @@ We utilize **TanStack Query (Vue Query)** for all remote state management and da
 
 ## 5. Testing & Static Analysis
 
-We enforce rigorous quality control on the codebase:
+I enforce rigorous quality control on the codebase:
 - **Pest PHP**: The entire backend is covered by ~61 Pest feature and unit tests (over 150 strict assertions), specifically targeting graph cyclic dependencies, mathematical edge cases, and API responses.
 - **PHPStan (Level 5)**: Static analysis ensures strict type safety across the entire codebase, heavily utilizing PHPDoc blocks (`@var`, `@property`) to guarantee array shapes and object structures are never ambiguous.
 - **Laravel Pint**: Enforces strict, consistent PSR-12 code formatting.
+
+## 6. Assumptions Made During Implementation
+
+1. **Immutable Audit Trails**: I assumed that once a commission is calculated, the record of that calculation (and the specific steps used) should never be altered, even if the base formula changes in the future. This is why I store the exact `input_values` and `calculation_steps` as JSON snapshots on the `CommissionCalculation` model.
+2. **Asynchronous Recalculations**: I assumed that activating a new formula on a production database with potentially millions of contracts would cause an HTTP timeout if processed synchronously. Therefore, I offloaded the mass-recalculation to the background Queue.
+3. **Variable Naming Strictness**: I assumed that formula variables should be strictly validated for existence before evaluation to prevent silent mathematical failures. If an admin uses an undefined variable, the `FormulaValidator` blocks the save.
+4. **Data Types**: I assumed all monetary and usage values (`annual_usage`, `contract_value`, `result`) should be treated as precise decimals/floats in the calculation engine.
