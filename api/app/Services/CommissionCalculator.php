@@ -28,14 +28,16 @@ class CommissionCalculator
         $variablesByName = collect($formula->variables)->pluck('expression', 'name')->toArray();
 
         $steps = [];
+        $stepNumber = 1;
         foreach ($orderedNames as $name) {
             $expression = $variablesByName[$name];
             $value = $this->evaluator->evaluate($expression, $variableMap);
 
             $steps[] = [
-                'variable' => $name,
+                'step'       => $stepNumber++,
+                'variable'   => $name,
                 'expression' => $expression,
-                'value' => $value,
+                'value'      => $value,
             ];
 
             $variableMap[$name] = $value;
@@ -44,9 +46,10 @@ class CommissionCalculator
         $result = $this->evaluator->evaluate($formula->expression, $variableMap);
 
         $steps[] = [
-            'variable' => CommissionCalculation::RESULT,
+            'step'       => null,
+            'variable'   => CommissionCalculation::RESULT,
             'expression' => $formula->expression,
-            'value' => $result,
+            'value'      => $result,
         ];
 
         return new CommissionCalculationData(

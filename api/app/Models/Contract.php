@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['name', 'annual_usage', 'contract_value', 'contract_length', 'risk_score'])]
 class Contract extends Model
@@ -25,5 +26,10 @@ class Contract extends Model
     public function commissionCalculations(): HasMany
     {
         return $this->hasMany(CommissionCalculation::class);
+    }
+
+    public function latestCommission(): HasOne
+    {
+        return $this->hasOne(CommissionCalculation::class)->latestOfMany('calculated_at');
     }
 }

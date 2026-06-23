@@ -22,6 +22,7 @@ export type Contract = {
   contract_length: number
   risk_score: number
   created_at: string
+  last_commission_result?: number | null
 }
 
 export type CalculationStep = {

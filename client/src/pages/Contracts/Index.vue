@@ -15,7 +15,6 @@ document.title = 'Contracts — EnergyLogix'
 const page = ref(1)
 
 const loadingIds = ref<Set<number>>(new Set())
-const lastCommissions = ref<Record<number, number>>({})
 const noActiveFormulaError = ref(false)
 
 const { data: contractData, isLoading, isFetching } = useContracts(page)
@@ -29,7 +28,6 @@ async function calculate(contractId: number) {
   loadingIds.value = new Set([...loadingIds.value, contractId])
   try {
     const calc = await calculateContract(contractId)
-    lastCommissions.value[contractId] = calc.result
   } catch (err: unknown) {
     const e = err as Error & { status?: number }
     if (e.status === 422) {
@@ -69,13 +67,11 @@ const columns = [
     header: 'Risk Score',
     cell: info => h('span', { class: 'inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-500/10' }, `${info.getValue().toLocaleString('en-US')} / 10`),
   }),
-  columnHelper.display({
-    id: 'last_commission',
+  columnHelper.accessor('last_commission_result', {
     header: 'Last Commission',
-    cell: props => {
-      const contractId = props.row.original.id
-      const commission = lastCommissions.value[contractId]
-      if (commission !== undefined) {
+    cell: info => {
+      const commission = info.getValue()
+      if (commission != null) {
         return h('span', { class: 'inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-[13px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20' }, formatCurrency(commission))
       }
       return h('span', { class: 'text-slate-400 font-mono text-sm' }, '—')

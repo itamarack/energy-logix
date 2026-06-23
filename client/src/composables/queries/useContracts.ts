@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/vue-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { contractsApi } from '@/api/contracts'
 
 import { type Ref } from 'vue'
@@ -17,7 +17,11 @@ export function useContracts(page: Ref<number>) {
 }
 
 export function useCalculateContract() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: contractsApi.calculate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: contractKeys.all })
+    },
   })
 }
