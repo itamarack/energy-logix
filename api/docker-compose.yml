@@ -1,0 +1,28 @@
+services:
+  mysql:
+    image: 'mysql/mysql-server:8.0'
+    ports:
+      - '${FORWARD_DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD:-password}'
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: '${DB_DATABASE:-energylogix}'
+      MYSQL_USER: '${DB_USERNAME:-energylogix_user}'
+      MYSQL_PASSWORD: '${DB_PASSWORD:-password}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - 'energylogix-mysql:/var/lib/mysql'
+    networks:
+      - energylogix
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD:-password}"]
+      retries: 3
+      timeout: 5s
+
+networks:
+  energylogix:
+    driver: bridge
+
+volumes:
+  energylogix-mysql:
+    driver: local

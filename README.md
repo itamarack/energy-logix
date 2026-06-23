@@ -5,7 +5,7 @@ This repository contains two independent sub-projects that together form the Ene
 | Sub-project | Stack | Directory |
 |---|---|---|
 | **API** | Laravel 13, PHP 8.3, SQLite | [`api/`](./api/) |
-| **Client** | Vue 3, Vite, TanStack Query | [`client/`](./client/) |
+| **Client** | Vue 3, Vite, TanStack Query | [`web/`](./web/) |
 
 ---
 
@@ -25,7 +25,7 @@ php artisan serve        # → http://localhost:8000
 ### 2. Start the Client
 
 ```bash
-cd client
+cd web
 npm install
 npm run dev              # → http://localhost:5173
 ```
@@ -74,7 +74,7 @@ DB_CONNECTION=sqlite
 QUEUE_CONNECTION=sync
 ```
 
-### Client (`client/.env`)
+### Web (`web/.env`)
 
 ```env
 VITE_API_BASE_URL=https://your-api-domain.com   # Leave empty to use the Vite proxy
