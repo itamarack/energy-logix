@@ -50,9 +50,10 @@ php artisan key:generate
 
 To run the database and the backend server concurrently, simply run:
 ```bash
+docker-compose up -d
 composer dev -- --force
 ```
-*(This custom command automatically spins up the Docker container, waits for MySQL to be healthy, runs `migrate:fresh --seed` to give you a clean database, and boots the backend servers).*
+*(The `docker-compose` command spins up MySQL in the background. The `composer dev` custom command runs `migrate:fresh --seed` to give you a clean database, and boots the backend servers).*
 
 The API will now be available at `http://localhost:8000`.
 
