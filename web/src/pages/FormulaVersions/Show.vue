@@ -90,6 +90,14 @@ function formatCurrency(value: number) {
             <RouterLink :to="FORMULA_VERSION_ROUTES.EDIT(formulaVersion.id)" class="ml-auto premium-button-secondary !px-4 !py-2 !text-[13px]">
               Edit Formula
             </RouterLink>
+            <a 
+              v-if="!formulaVersion.is_active" 
+              :href="`/api/v1/formula-versions/${formulaVersion.id}/report`" 
+              class="premium-button-secondary !bg-white hover:!bg-slate-50 !px-4 !py-2 !text-[13px]"
+              download
+            >
+              Download Closing Report
+            </a>
             <button v-if="!formulaVersion.is_active" type="button" class="premium-button !px-4 !py-2 !text-[13px]" @click="activate()">
               Activate Formula
             </button>
