@@ -62,7 +62,7 @@ document.title = 'EnergyLogix — Commission Engine'
             </svg>
           </div>
           <h2 class="mt-5 text-lg font-bold tracking-tight text-slate-900">Formula Builder</h2>
-          <p class="mt-2 text-sm leading-relaxed text-slate-600">Create and version commission formulas with intermediate variables and full syntax validation powered by Symfony ExpressionLanguage.</p>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">Create and version commission formulas with intermediate variables and full syntax validation.</p>
         </div>
         <div class="premium-card p-8">
           <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-500/20">

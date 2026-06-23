@@ -18,7 +18,7 @@ class ContractController extends Controller
 
     public function index(): JsonResponse
     {
-        return ContractResource::collection(Contract::all())
+        return ContractResource::collection(Contract::query()->paginate(10))
             ->response()
             ->setStatusCode(Response::HTTP_OK);
     }

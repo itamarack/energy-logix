@@ -13,7 +13,7 @@ class CalculationController extends Controller
     {
         $calculations = CommissionCalculation::with(['formulaVersion', 'contract'])
             ->orderBy('calculated_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return CommissionCalculationResource::collection($calculations)
             ->response()

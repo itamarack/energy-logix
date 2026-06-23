@@ -1,12 +1,11 @@
 import { apiClient } from './client'
-import type { Contract, CommissionCalculation } from '@/types'
+import type { Contract, CommissionCalculation, PaginatedResponse } from '@/types'
 
-type ApiCollection<T> = { data: T[] }
 type ApiResource<T> = { data: T }
 
 export const contractsApi = {
-  list: () =>
-    apiClient.get<ApiCollection<Contract>>('/api/v1/contracts').then((r) => r.data.data),
+  list: (page: number = 1) =>
+    apiClient.get<PaginatedResponse<Contract>>(`/api/v1/contracts?page=${page}`).then((r) => r.data),
 
   calculate: (id: number) =>
     apiClient.post<ApiResource<CommissionCalculation>>(`/api/v1/contracts/${id}/calculate`).then((r) => r.data.data),

@@ -21,7 +21,7 @@ class FormulaVersionController extends Controller
 
     public function index(): JsonResponse
     {
-        $formulaVersions = FormulaVersion::query()->orderBy('version_number', 'asc')->get();
+        $formulaVersions = FormulaVersion::query()->orderBy('version_number', 'asc')->paginate(10);
 
         return FormulaVersionResource::collection($formulaVersions)
             ->response()

@@ -1,15 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { formulaVersionsApi } from '@/api/formulaVersions'
 
+import { type Ref } from 'vue'
+
 export const formulaVersionKeys = {
   all: ['formula-versions'] as const,
+  list: (page: Ref<number>) => [...formulaVersionKeys.all, { page }] as const,
   detail: (id: number) => [...formulaVersionKeys.all, id] as const,
 }
 
-export function useFormulaVersions() {
+export function useFormulaVersions(page: Ref<number>) {
   return useQuery({
-    queryKey: formulaVersionKeys.all,
-    queryFn: formulaVersionsApi.list,
+    queryKey: formulaVersionKeys.list(page),
+    queryFn: () => formulaVersionsApi.list(page.value),
   })
 }
 

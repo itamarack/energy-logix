@@ -16,6 +16,31 @@ const { data: calculation, isLoading } = useQuery({
 function formatCurrency(value: number) {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
 }
+
+function exportCsv() {
+  if (!calculation.value) return
+  const calc = calculation.value
+  const rows = [
+    ['Field', 'Value'],
+    ['ID', calc.id],
+    ['Contract', calc.contract?.name ?? ''],
+    ['Formula Version', calc.formula_version?.name ?? ''],
+    ['Formula Version #', calc.formula_version?.version_number ?? ''],
+    ['Commission Result', formatCurrency(calc.result)],
+    ['Calculated At', new Date(calc.calculated_at).toLocaleString()],
+    ['', ''],
+    ['Step', 'Variable', 'Expression', 'Value'],
+    ...(calc.calculation_steps ?? []).map(s => [s.step, s.variable, s.expression, s.value]),
+  ]
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `calculation-${calc.id}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -31,15 +56,29 @@ function formatCurrency(value: number) {
     <template v-else-if="calculation">
       <div class="border-b border-slate-200 bg-white">
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div class="mb-1 flex items-center gap-2 text-sm text-slate-500">
-            <RouterLink :to="CALCULATION_ROUTES.INDEX" class="hover:text-blue-600">Calculations</RouterLink>
-            <span>/</span>
-            <span class="font-mono">#{{ calculation.id }}</span>
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="mb-1 flex items-center gap-2 text-sm text-slate-500">
+                <RouterLink :to="CALCULATION_ROUTES.INDEX" class="hover:text-blue-600">Calculations</RouterLink>
+                <span>/</span>
+                <span class="font-mono">#{{ calculation.id }}</span>
+              </div>
+              <h1 class="text-2xl font-semibold text-slate-900">Commission Audit</h1>
+              <p class="mt-1 text-sm text-slate-500">
+                Calculation #{{ calculation.id }} · {{ new Date(calculation.calculated_at).toLocaleString() }}
+              </p>
+            </div>
+            <button
+              type="button"
+              @click="exportCsv"
+              class="premium-button"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Export CSV
+            </button>
           </div>
-          <h1 class="text-2xl font-semibold text-slate-900">Commission Audit</h1>
-          <p class="mt-1 text-sm text-slate-500">
-            Calculation #{{ calculation.id }} · {{ new Date(calculation.calculated_at).toLocaleString() }}
-          </p>
         </div>
       </div>
 

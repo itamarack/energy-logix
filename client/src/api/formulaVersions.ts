@@ -1,12 +1,11 @@
 import { apiClient } from './client'
-import type { FormulaVersion, SimulationResult } from '@/types'
+import type { FormulaVersion, SimulationResult, PaginatedResponse } from '@/types'
 
-type ApiCollection<T> = { data: T[] }
 type ApiResource<T> = { data: T }
 
 export const formulaVersionsApi = {
-  list: () =>
-    apiClient.get<ApiCollection<FormulaVersion>>('/api/v1/formula-versions').then((r) => r.data.data),
+  list: (page = 1) =>
+    apiClient.get<PaginatedResponse<FormulaVersion>>(`/api/v1/formula-versions?page=${page}`).then((r) => r.data),
 
   get: (id: number) =>
     apiClient.get<ApiResource<FormulaVersion>>(`/api/v1/formula-versions/${id}`).then((r) => r.data.data),
@@ -24,5 +23,5 @@ export const formulaVersionsApi = {
     apiClient.post<ApiResource<FormulaVersion>>(`/api/v1/formula-versions/${id}/deactivate`).then((r) => r.data.data),
 
   simulate: (id: number) =>
-    apiClient.post<SimulationResult>(`/api/v1/formula-versions/${id}/simulate`).then((r) => r.data),
+    apiClient.post<{ data: SimulationResult }>(`/api/v1/formula-versions/${id}/simulate`).then((r) => r.data.data),
 }
