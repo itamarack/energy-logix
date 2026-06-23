@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['name', 'description', 'version_number', 'expression', 'variables', 'is_active'])]
+/**
+ * @property array<int, array{name: string, expression: string}>|null $variables
+ */
 class FormulaVersion extends Model
 {
     use HasFactory;

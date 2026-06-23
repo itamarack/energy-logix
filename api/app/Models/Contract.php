@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['name', 'annual_usage', 'contract_value', 'contract_length', 'risk_score'])]
+/**
+ * @property-read CommissionCalculation|null $latestCommission
+ */
 class Contract extends Model
 {
     use HasFactory;

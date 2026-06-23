@@ -5,7 +5,9 @@ namespace App\Services;
 use App\DTOs\SimulationResult;
 
 use App\Models\Contract;
+use App\Models\FormulaVariable;
 use App\Models\FormulaVersion;
+use Illuminate\Support\Facades\Cache;
 
 class CommissionSimulator
 {
@@ -43,16 +45,19 @@ class CommissionSimulator
 
     private function calculateDryRun(FormulaVersion $formula, Contract $contract): float
     {
-        $baseVariables = \Illuminate\Support\Facades\Cache::remember('formula_variables', 3600, function () {
-            return \App\Models\FormulaVariable::pluck('name')->toArray();
+        $baseVariables = Cache::remember('formula_variables', 3600, function () {
+            return FormulaVariable::pluck('name')->toArray();
         });
         
         $variableMap = $contract->only($baseVariables);
 
-        $orderedNames = $this->resolver->resolve($formula->variables ?? []);
+        /** @var array<int, array{name: string, expression: string}> $variables */
+        $variables = $formula->variables ?? [];
+        $orderedNames = $this->resolver->resolve($variables);
 
+        /** @var array<string, string> $variablesByName */
         $variablesByName = [];
-        foreach ($formula->variables ?? [] as $variable) {
+        foreach ($variables as $variable) {
             $variablesByName[$variable['name']] = $variable['expression'];
         }
 

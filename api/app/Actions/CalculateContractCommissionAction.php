@@ -17,12 +17,16 @@ class CalculateContractCommissionAction
     {
         $data = $this->calculator->calculate($formula, $contract);
 
-        return $contract->commissionCalculations()->create([
+        /** @var CommissionCalculation $calculation */
+        $calculation = $contract->commissionCalculations()->create([
+
             'formula_version_id' => $formula->id,
             'input_values' => $data->inputValues,
             'calculation_steps' => $data->steps,
             'result' => $data->result,
             'calculated_at' => now(),
         ]);
+
+        return $calculation;
     }
 }

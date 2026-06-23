@@ -24,8 +24,8 @@ class CommissionCalculator
         $inputValues = $contract->only($baseVariables);        
         $variableMap = $inputValues;
 
-        $orderedNames = $this->resolver->resolve($formula->variables);
-        $variablesByName = collect($formula->variables)->pluck('expression', 'name')->toArray();
+        $orderedNames = $this->resolver->resolve((array) $formula->variables);
+        $variablesByName = collect((array) $formula->variables)->pluck('expression', 'name')->toArray();
 
         $steps = [];
         $stepNumber = 1;
