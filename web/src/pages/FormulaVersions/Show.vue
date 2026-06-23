@@ -1,51 +1,47 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import AppLayout from '@/layouts/AppLayout.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import StatCard from '@/components/StatCard.vue'
-import { formulaVersionsApi } from '@/api/formulaVersions'
+import {
+  useFormulaVersion,
+  useActivateFormulaVersion,
+  useDeactivateFormulaVersion,
+  useSimulateFormulaVersion,
+} from '@/composables/queries/useFormulaVersions'
 import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 import { formatCurrency } from '@/utils/formatCurrency'
 import type { SimulationResult } from '@/types'
 
 const route = useRoute()
 const id = Number(route.params.id)
-const queryClient = useQueryClient()
 
 const isSimulating = ref(false)
 const simulationResult = ref<SimulationResult | null>(null)
 const simulationError = ref<string | null>(null)
 
-const { data: formulaVersion, isLoading } = useQuery({
-  queryKey: ['formula-versions', id],
-  queryFn: () => formulaVersionsApi.get(id),
-})
+const { data: formulaVersion, isLoading } = useFormulaVersion(id)
 
-const { mutate: activate } = useMutation({
-  mutationFn: () => formulaVersionsApi.activate(id),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['formula-versions'] })
-    queryClient.invalidateQueries({ queryKey: ['formula-versions', id] })
-  },
-})
+const { mutate: activateMutation } = useActivateFormulaVersion()
+const { mutate: deactivateMutation } = useDeactivateFormulaVersion()
+const { mutateAsync: simulateFormula } = useSimulateFormulaVersion()
 
-const { mutate: deactivate } = useMutation({
-  mutationFn: () => formulaVersionsApi.deactivate(id),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['formula-versions'] })
-    queryClient.invalidateQueries({ queryKey: ['formula-versions', id] })
-  },
-})
+function activate() {
+  activateMutation(id)
+}
+
+function deactivate() {
+  deactivateMutation(id)
+}
 
 async function runSimulation() {
   isSimulating.value = true
   simulationResult.value = null
   simulationError.value = null
   try {
-    simulationResult.value = await formulaVersionsApi.simulate(id)
+    simulationResult.value = await simulateFormula(id)
   } catch (err: unknown) {
     const e = err as Error & { data?: { message?: string } }
     simulationError.value = e.data?.message ?? e.message ?? 'An unexpected error occurred.'

@@ -6,7 +6,8 @@ import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
-import { useContract, useContractCalculations, useCalculateContract } from '@/composables/queries/useContracts'
+import { useContract, useContractCalculations } from '@/composables/queries/useContracts'
+import { useContractMutation } from '@/composables/mutations/useContractMutation'
 import { CONTRACT_ROUTES } from '@/routes/paths/contractRoutes'
 import { CALCULATION_ROUTES } from '@/routes/paths/calculationRoutes'
 import { formatCurrency } from '@/utils/formatCurrency'
@@ -25,25 +26,14 @@ const id = Number(route.params.id)
 document.title = 'Contract — EnergyLogix'
 
 const page = ref(1)
-const noActiveFormulaError = ref(false)
 
 const { data: contract, isLoading: contractLoading } = useContract(id)
 const { data: calculationsData, isLoading, isFetching } = useContractCalculations(id, page)
-const { mutateAsync: calculateContract, isPending: isCalculating } = useCalculateContract()
+
+const { calculate, isPending: isCalculating, noActiveFormulaError, dismissError } = useContractMutation()
 
 const calculations = computed(() => calculationsData.value?.data ?? [])
 const pagination = computed(() => calculationsData.value?.meta)
-
-async function calculate() {
-  noActiveFormulaError.value = false
-  try {
-    await calculateContract(id)
-  } catch (err: unknown) {
-    const e = err as Error & { status?: number }
-    if (e.status === 422) noActiveFormulaError.value = true
-  }
-}
-
 
 const columnHelper = createColumnHelper<CommissionCalculation>()
 
@@ -124,33 +114,33 @@ const table = useVueTable({
           </div>
         </template>
         <template #actions>
-          <button
-            type="button"
-            :disabled="isCalculating"
-            class="premium-button"
-            @click="calculate"
-          >
-            <svg v-if="isCalculating" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          <button type="button" class="premium-button" @click="calculate(id)" :disabled="isCalculating">
+            <svg v-if="isCalculating" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.82m2.56-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+            <svg v-else class="mr-2 h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            {{ isCalculating ? 'Calculating…' : 'Calculate Now' }}
+            {{ isCalculating ? 'Calculating…' : 'Calculate Commission' }}
           </button>
         </template>
       </PageHeader>
 
       <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div v-if="noActiveFormulaError" class="mb-4 flex items-start justify-between rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          <span>No active formula version — please activate one first.</span>
-          <button type="button" class="ml-4 shrink-0 text-amber-600 hover:text-amber-900" @click="noActiveFormulaError = false">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div v-if="noActiveFormulaError" class="mb-6 flex items-center justify-between rounded-md bg-amber-50 px-4 py-3 border border-amber-200">
+        <div class="flex items-center gap-3">
+          <svg class="h-5 w-5 text-amber-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p class="text-sm text-amber-800">You must have an <strong>Active Formula Version</strong> to calculate this contract.</p>
         </div>
+        <button type="button" class="text-amber-600 hover:text-amber-900" @click="dismissError">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
         <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatCard title="Annual Usage" :value="contract.annual_usage.toLocaleString('en-US')" suffix="kWh" />

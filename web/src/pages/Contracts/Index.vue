@@ -5,10 +5,11 @@ import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 import { formatCurrency } from '@/utils/formatCurrency'
-import { useContracts, useCalculateContract } from '@/composables/queries/useContracts'
+import { useContracts } from '@/composables/queries/useContracts'
+import { useContractMutation } from '@/composables/mutations/useContractMutation'
 import { CONTRACT_ROUTES } from '@/routes/paths/contractRoutes'
 import type { Contract } from '@/types'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import {
   getCoreRowModel,
   useVueTable,
@@ -19,35 +20,11 @@ document.title = 'Contracts — EnergyLogix'
 
 const page = ref(1)
 
-const loadingIds = ref<Set<number>>(new Set())
-const noActiveFormulaError = ref(false)
-
-const router = useRouter()
-
 const { data: contractData, isLoading, isFetching } = useContracts(page)
-const { mutateAsync: calculateContract } = useCalculateContract()
+const { calculate, loadingIds, noActiveFormulaError, dismissError } = useContractMutation()
 
 const contracts = computed(() => contractData.value?.data ?? [])
 const pagination = computed(() => contractData.value?.meta)
-
-async function calculate(contractId: number) {
-  noActiveFormulaError.value = false
-  loadingIds.value = new Set([...loadingIds.value, contractId])
-  try {
-    await calculateContract(contractId)
-  } catch (err: unknown) {
-    const e = err as Error & { status?: number }
-    if (e.status === 422) {
-      noActiveFormulaError.value = true
-    }
-  } finally {
-    const next = new Set(loadingIds.value)
-    next.delete(contractId)
-    loadingIds.value = next
-  }
-}
-
-
 const columnHelper = createColumnHelper<Contract>()
 
 const columns = [
@@ -95,11 +72,10 @@ const columns = [
         setup() {
           return () => h(ActionMenu, null, {
             default: () => [
-              h('button', {
-                type: 'button',
+              h(RouterLink, {
+                to: CONTRACT_ROUTES.SHOW(contractId),
                 class: 'flex w-full items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50',
-                onClick: () => router.push(CONTRACT_ROUTES.SHOW(contractId)),
-              }, [
+              }, () => [
                 h('svg', { class: 'h-4 w-4 text-slate-400', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.5', viewBox: '0 0 24 24' }, [
                   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z' }),
                   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z' }),

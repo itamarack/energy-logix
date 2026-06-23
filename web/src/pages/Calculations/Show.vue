@@ -15,8 +15,6 @@ const { data: calculation, isLoading } = useQuery({
   queryKey: ['calculations', id],
   queryFn: () => calculationsApi.get(id),
 })
-
-
 </script>
 
 <template>

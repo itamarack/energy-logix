@@ -1,132 +1,40 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+
 import { useRouter } from 'vue-router'
-import { useMutation } from '@tanstack/vue-query'
-import Tribute from 'tributejs'
-import 'tributejs/dist/tribute.css'
 import AppLayout from '@/layouts/AppLayout.vue'
 import PageHeader from '@/components/PageHeader.vue'
-import { formulaVersionsApi } from '@/api/formulaVersions'
 import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
-import { useFormulaVariables } from '@/composables/queries/useFormulaVariables'
+import { useCreateFormulaVersion } from '@/composables/queries/useFormulaVersions'
+import { useFormulaForm } from '@/composables/useFormulaForm'
+import { useFormulaAutocomplete } from '@/composables/useFormulaAutocomplete'
 
 document.title = 'New Formula Version — EnergyLogix'
 
 const router = useRouter()
 
-const form = ref({
-  name: '',
-  description: '',
-  expression: '',
-  variables: [] as Array<{ name: string; expression: string }>,
-})
+const { form, errors, addVariable, removeVariable, parseErrors } = useFormulaForm()
+const formulaAutocomplete = useFormulaAutocomplete(() => form.value.variables)
 
-const errors = ref<Record<string, string>>({})
-const expressionEl = ref<HTMLTextAreaElement | null>(null)
-const varExprEls = ref<Record<number, HTMLInputElement | null>>({})
-
-const { data: baseVariables, isLoading: isVariablesLoading } = useFormulaVariables()
-
-const mainExpressionVariables = computed(() => [
-  ...(baseVariables.value ?? []),
-  ...form.value.variables
-    .filter((v) => v.name.trim() !== '')
-    .map((v) => ({ name: v.name, description: 'Intermediate variable' })),
-])
-
-function variablesForRow(index: number) {
-  return [
-    ...(baseVariables.value ?? []),
-    ...form.value.variables
-      .slice(0, index)
-      .filter((v) => v.name.trim() !== '')
-      .map((v) => ({ name: v.name, description: 'Intermediate variable' })),
-  ]
+function handleRemoveVariable(index: number) {
+  removeVariable(index)
+  delete formulaAutocomplete.varExprEls.value[index]
 }
 
-type VarItem = { name: string; description: string }
-const tributeInstances: Array<{ instance: Tribute<VarItem>; el: HTMLElement }> = []
+const { mutate: submit, isPending } = useCreateFormulaVersion()
 
-function detachAll() {
-  tributeInstances.forEach(({ instance, el }) => {
-    try { instance.detach(el) } catch { /* ignored */ }
-  })
-  tributeInstances.length = 0
-}
-
-function createTribute(getItems: () => VarItem[]) {
-  return new Tribute<VarItem>({
-    trigger: '@',
-    lookup: 'name',
-    fillAttr: 'name',
-    values: (text, cb) => cb(getItems().filter((v) => v.name.toLowerCase().startsWith(text.toLowerCase()))),
-    menuItemTemplate: (item) =>
-      `<span class="tribute-name">${item.original.name}</span><span class="tribute-desc">${item.original.description}</span>`,
-    noMatchTemplate: () => '<span class="tribute-none">No variables match</span>',
-    selectTemplate: (item) => (item ? item.original.name : ''),
-    allowSpaces: false,
-    autocompleteMode: false,
-    replaceTextSuffix: '',
-  })
-}
-
-function attachTributeToEl(el: HTMLElement, getItems: () => VarItem[]) {
-  const instance = createTribute(getItems)
-  instance.attach(el)
-  tributeInstances.push({ instance, el })
-}
-
-async function reattachTribute() {
-  await nextTick()
-  detachAll()
-  if (expressionEl.value) {
-    attachTributeToEl(expressionEl.value, () => mainExpressionVariables.value)
-  }
-  Object.entries(varExprEls.value).forEach(([indexStr, el]) => {
-    if (el) {
-      const index = parseInt(indexStr)
-      attachTributeToEl(el, () => variablesForRow(index))
-    }
-  })
-}
-
-onMounted(reattachTribute)
-onBeforeUnmount(detachAll)
-watch(() => form.value.variables.length, reattachTribute)
-
-function addVariable() {
-  form.value.variables.push({ name: '', expression: '' })
-}
-
-function removeVariable(index: number) {
-  form.value.variables.splice(index, 1)
-  delete varExprEls.value[index]
-}
-
-const { mutate: submit, isPending } = useMutation({
-  mutationFn: () =>
-    formulaVersionsApi.create({
+function handleSubmit() {
+  submit(
+    {
       name: form.value.name,
       description: form.value.description || null,
       expression: form.value.expression,
       variables: form.value.variables,
-    }),
-  onSuccess: () => router.push(FORMULA_VERSION_ROUTES.INDEX),
-  onError: (err: unknown) => {
-    const e = err as Error & { data?: { message?: string; errors?: Record<string, string[]> } }
-    errors.value = {}
-    if (e.data?.errors) {
-      Object.entries(e.data.errors).forEach(([field, msgs]) => {
-        errors.value[field] = msgs[0]
-      })
-    } else if (e.data?.message) {
-      errors.value.expression = e.data.message
+    },
+    {
+      onSuccess: () => router.push(FORMULA_VERSION_ROUTES.INDEX),
+      onError: parseErrors,
     }
-  },
-})
-
-function handleSubmit() {
-  submit()
+  )
 }
 </script>
 
@@ -186,7 +94,7 @@ function handleSubmit() {
                   </div>
                   <textarea
                     id="expression"
-                    ref="expressionEl"
+                    :ref="(el) => { formulaAutocomplete.expressionEl.value = el as HTMLTextAreaElement }"
                     v-model="form.expression"
                     rows="4"
                     :class="['ide-textarea border-0 rounded-none focus:ring-0', errors.expression ? 'text-red-600' : '']"
@@ -226,14 +134,14 @@ function handleSubmit() {
                         <input
                           v-model="variable.expression"
                           type="text"
-                          :ref="(el) => { varExprEls[index] = el as HTMLInputElement }"
+                          :ref="el => { formulaAutocomplete.varExprEls.value[index] = el as HTMLInputElement }"
                           class="ide-textarea !py-2 !text-[13px]"
                           placeholder="Expression"
                           spellcheck="false"
                         />
                       </div>
                     </div>
-                    <button type="button" class="mt-6 text-slate-400 opacity-50 transition-all hover:scale-110 hover:text-red-500 hover:opacity-100 group-hover:opacity-100" aria-label="Remove variable" @click="removeVariable(index)">
+                    <button type="button" class="mt-6 text-slate-400 opacity-50 transition-all hover:scale-110 hover:text-red-500 hover:opacity-100 group-hover:opacity-100" aria-label="Remove variable" @click="handleRemoveVariable(index)">
                       <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -263,9 +171,9 @@ function handleSubmit() {
             <div class="premium-card sticky top-24 p-6">
               <h2 class="mb-1 text-[13px] font-bold uppercase tracking-widest text-slate-500">Available Variables</h2>
               <p class="mb-6 text-[13px] text-slate-400">Type <strong class="text-indigo-500">@</strong> in any expression field to insert a variable.</p>
-              <div v-if="isVariablesLoading" class="mt-4 text-sm text-slate-500">Loading available variables...</div>
+              <div v-if="formulaAutocomplete.isVariablesLoading" class="mt-4 text-sm text-slate-500">Loading available variables...</div>
               <ul v-else class="space-y-5">
-                <li v-for="v in baseVariables" :key="v.name" class="flex items-start gap-4">
+                <li v-for="v in formulaAutocomplete.baseVariables" :key="v.name" class="flex items-start gap-4">
                   <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 ring-1 ring-indigo-500/20">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </div>
