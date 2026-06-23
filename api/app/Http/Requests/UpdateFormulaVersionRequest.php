@@ -41,10 +41,10 @@ class UpdateFormulaVersionRequest extends FormRequest
 
                 try {
                     app(FormulaValidator::class)->validate($expression, $variables);
-                } catch (ParseException | UndefinedVariableException | CircularDependencyException $e) {
+                } catch (ParseException|UndefinedVariableException|CircularDependencyException $e) {
                     $validator->errors()->add('expression', $e->getMessage());
                 }
-            }
+            },
         ];
     }
 }

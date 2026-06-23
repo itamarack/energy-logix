@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\FormulaVersion;
+use Database\Seeders\FormulaVariableSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)
@@ -9,8 +11,8 @@ pest()->extend(TestCase::class)
     ->in('Feature');
 
 pest()->beforeEach(function () {
-    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
-    \Illuminate\Support\Facades\Cache::flush();
+    $this->seed(FormulaVariableSeeder::class);
+    Cache::flush();
 })->in('Feature');
 
 pest()
@@ -28,7 +30,4 @@ expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 
-function something()
-{
-
-}
+function something() {}

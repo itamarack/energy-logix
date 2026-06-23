@@ -35,16 +35,16 @@ class FormulaVersionSeeder extends Seeder
             'variables' => [
                 [
                     'name' => 'BaseCommission',
-                    'expression' => 'annual_usage * 0.05'
+                    'expression' => 'annual_usage * 0.05',
                 ],
                 [
                     'name' => 'LengthBonus',
-                    'expression' => 'contract_length * 50'
+                    'expression' => 'contract_length * 50',
                 ],
                 [
                     'name' => 'RiskPenalty',
-                    'expression' => 'risk_score * 100'
-                ]
+                    'expression' => 'risk_score * 100',
+                ],
             ],
             'is_active' => true,
         ]);

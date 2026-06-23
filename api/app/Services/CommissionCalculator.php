@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\DTOs\CommissionCalculationData;
-
 use App\Models\CommissionCalculation;
 use App\Models\Contract;
+use App\Models\FormulaVariable;
 use App\Models\FormulaVersion;
+use Illuminate\Support\Facades\Cache;
 
 class CommissionCalculator
 {
@@ -17,11 +18,11 @@ class CommissionCalculator
 
     public function calculate(FormulaVersion $formula, Contract $contract): CommissionCalculationData
     {
-        $baseVariables = \Illuminate\Support\Facades\Cache::remember('formula_variables', 3600, function () {
-            return \App\Models\FormulaVariable::pluck('name')->toArray();
+        $baseVariables = Cache::remember('formula_variables', 3600, function () {
+            return FormulaVariable::pluck('name')->toArray();
         });
-        
-        $inputValues = $contract->only($baseVariables);        
+
+        $inputValues = $contract->only($baseVariables);
         $variableMap = $inputValues;
 
         $orderedNames = $this->resolver->resolve((array) $formula->variables);
@@ -34,10 +35,10 @@ class CommissionCalculator
             $value = $this->evaluator->evaluate($expression, $variableMap);
 
             $steps[] = [
-                'step'       => $stepNumber++,
-                'variable'   => $name,
+                'step' => $stepNumber++,
+                'variable' => $name,
                 'expression' => $expression,
-                'value'      => $value,
+                'value' => $value,
             ];
 
             $variableMap[$name] = $value;
@@ -46,10 +47,10 @@ class CommissionCalculator
         $result = $this->evaluator->evaluate($formula->expression, $variableMap);
 
         $steps[] = [
-            'step'       => null,
-            'variable'   => CommissionCalculation::RESULT,
+            'step' => null,
+            'variable' => CommissionCalculation::RESULT,
             'expression' => $formula->expression,
-            'value'      => $result,
+            'value' => $result,
         ];
 
         return new CommissionCalculationData(

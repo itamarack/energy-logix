@@ -3,12 +3,10 @@
 use App\Models\CommissionCalculation;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
+use Tests\TestCase;
 
-test('GET /api/v1/calculations returns calculations ordered by calculated_at descending', function (): void
-
-{
-    /** @var \Tests\TestCase $this */
-
+test('GET /api/v1/calculations returns calculations ordered by calculated_at descending', function (): void {
+    /** @var TestCase $this */
     $formula = FormulaVersion::factory()->create();
     $contracts = Contract::factory()->count(3)->create();
 
@@ -45,10 +43,8 @@ test('GET /api/v1/calculations returns calculations ordered by calculated_at des
     }
 });
 
-test('GET /api/v1/calculations/{id} returns the full calculation record', function (): void
-
-{
-    /** @var \Tests\TestCase $this */
+test('GET /api/v1/calculations/{id} returns the full calculation record', function (): void {
+    /** @var TestCase $this */
     $formula = FormulaVersion::factory()->create();
     $contract = Contract::factory()->create();
 

@@ -1,26 +1,29 @@
 <?php
 
-use App\Models\CommissionCalculation;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
 use App\Services\CommissionCalculator;
 use App\Services\DependencyResolver;
 use App\Services\FormulaEvaluator;
+use Database\Seeders\FormulaVariableSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Symfony\Component\ExpressionLanguage\Lexer;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
-    \Illuminate\Support\Facades\Cache::flush();
+    $this->seed(FormulaVariableSeeder::class);
+    Cache::flush();
 });
 
 function makeCalculator(): CommissionCalculator
 {
-    $evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
+    $evaluator = new FormulaEvaluator(new ExpressionLanguage);
 
-    return new CommissionCalculator($evaluator, new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer()));
+    return new CommissionCalculator($evaluator, new DependencyResolver(new Lexer));
 }
 
 it('evaluates a simple formula and returns the correct numeric result', function (): void {

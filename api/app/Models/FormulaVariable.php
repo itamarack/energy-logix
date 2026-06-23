@@ -6,6 +6,4 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['name', 'description'])]
-class FormulaVariable extends Model
-{
-}
+class FormulaVariable extends Model {}

@@ -6,15 +6,21 @@ use App\Exceptions\UndefinedVariableException;
 use App\Services\DependencyResolver;
 use App\Services\FormulaEvaluator;
 use App\Services\FormulaValidator;
+use Database\Seeders\FormulaVariableSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Symfony\Component\ExpressionLanguage\Lexer;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, \Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
-    \Illuminate\Support\Facades\Cache::flush();
+    $this->seed(FormulaVariableSeeder::class);
+    Cache::flush();
 
-    $evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
-    $this->validator = new FormulaValidator($evaluator, new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer()));
+    $evaluator = new FormulaEvaluator(new ExpressionLanguage);
+    $this->validator = new FormulaValidator($evaluator, new DependencyResolver(new Lexer));
 });
 
 it('passes for a valid simple formula with no intermediate variables', function (): void {

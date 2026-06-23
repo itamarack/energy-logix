@@ -30,6 +30,7 @@ class FormulaVersionAction
     {
         $this->operation = function () use ($formulaVersion, $data) {
             $formulaVersion->fill($data->toArray())->save();
+
             return $formulaVersion->fresh();
         };
 
@@ -60,7 +61,6 @@ class FormulaVersionAction
 
         return $this;
     }
-
 
     public function execute(): mixed
     {

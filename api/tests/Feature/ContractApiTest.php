@@ -3,11 +3,10 @@
 use App\Models\CommissionCalculation;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
+use Tests\TestCase;
 
-test('GET /api/v1/contracts returns 200 with all contracts', function (): void
-
-{
-    /** @var \Tests\TestCase $this */
+test('GET /api/v1/contracts returns 200 with all contracts', function (): void {
+    /** @var TestCase $this */
     Contract::factory()->count(5)->create();
 
     $response = $this->getJson('/api/v1/contracts');
@@ -23,10 +22,8 @@ test('GET /api/v1/contracts returns 200 with all contracts', function (): void
     ]);
 });
 
-test('POST /api/v1/contracts/{id}/calculate with an active formula returns 200 and persists one new record', function (): void
-
-{
-    /** @var \Tests\TestCase $this */
+test('POST /api/v1/contracts/{id}/calculate with an active formula returns 200 and persists one new record', function (): void {
+    /** @var TestCase $this */
     FormulaVersion::factory()->create([
         'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
         'variables' => [],
@@ -55,10 +52,8 @@ test('POST /api/v1/contracts/{id}/calculate with an active formula returns 200 a
     expect(CommissionCalculation::query()->count())->toBe($beforeCount + 1);
 });
 
-test('POST /api/v1/contracts/{id}/calculate with no active formula returns 422 and creates no record', function (): void
-
-{
-    /** @var \Tests\TestCase $this */
+test('POST /api/v1/contracts/{id}/calculate with no active formula returns 422 and creates no record', function (): void {
+    /** @var TestCase $this */
     FormulaVersion::factory()->create(['is_active' => false]);
 
     $contract = Contract::factory()->create();

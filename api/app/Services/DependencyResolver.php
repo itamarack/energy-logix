@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-
 use App\Exceptions\CircularDependencyException;
+use App\Models\FormulaVariable;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\ExpressionLanguage\Lexer;
 use Symfony\Component\ExpressionLanguage\Token;
 use Throwable;
@@ -17,7 +18,7 @@ class DependencyResolver
     public function resolve(array $variables): array
     {
         $expressions = array_column($variables, 'expression', 'name');
-        
+
         $visiting = [];
         $visited = [];
         $sorted = [];
@@ -29,7 +30,7 @@ class DependencyResolver
         return $sorted;
     }
 
-    private function visitNode(string $name, array $expressions, array &$visiting, array &$visited, array &$sorted): void 
+    private function visitNode(string $name, array $expressions, array &$visiting, array &$visited, array &$sorted): void
     {
         if (isset($visiting[$name])) {
             throw new CircularDependencyException(array_keys($visiting));
@@ -57,8 +58,8 @@ class DependencyResolver
         try {
             $stream = $this->lexer->tokenize($expression);
             $tokens = [];
-            
-            while (!$stream->isEOF()) {
+
+            while (! $stream->isEOF()) {
                 if ($stream->current->type === Token::NAME_TYPE) {
                     $tokens[] = $stream->current->value;
                 }
@@ -68,13 +69,13 @@ class DependencyResolver
             return [];
         }
 
-        $baseVariables = \Illuminate\Support\Facades\Cache::remember('formula_variables', 3600, function () {
-            return \App\Models\FormulaVariable::pluck('name')->toArray();
+        $baseVariables = Cache::remember('formula_variables', 3600, function () {
+            return FormulaVariable::pluck('name')->toArray();
         });
 
         return collect($tokens)
-            ->map(fn(mixed $value): string => (string) $value)
-            ->reject(fn(string $value) => in_array($value, $baseVariables, true))
+            ->map(fn (mixed $value): string => (string) $value)
+            ->reject(fn (string $value) => in_array($value, $baseVariables, true))
             ->unique()
             ->values()
             ->all();

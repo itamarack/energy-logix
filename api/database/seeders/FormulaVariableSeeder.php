@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\FormulaVariable;
 use Illuminate\Database\Seeder;
 
 class FormulaVariableSeeder extends Seeder
@@ -20,7 +20,7 @@ class FormulaVariableSeeder extends Seeder
         ];
 
         foreach ($variables as $variable) {
-            \App\Models\FormulaVariable::updateOrCreate(['name' => $variable['name']], $variable);
+            FormulaVariable::updateOrCreate(['name' => $variable['name']], $variable);
         }
     }
 }

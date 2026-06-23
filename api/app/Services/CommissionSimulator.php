@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\DTOs\SimulationResult;
-
 use App\Models\Contract;
 use App\Models\FormulaVariable;
 use App\Models\FormulaVersion;
@@ -48,7 +47,7 @@ class CommissionSimulator
         $baseVariables = Cache::remember('formula_variables', 3600, function () {
             return FormulaVariable::pluck('name')->toArray();
         });
-        
+
         $variableMap = $contract->only($baseVariables);
 
         /** @var array<int, array{name: string, expression: string}> $variables */

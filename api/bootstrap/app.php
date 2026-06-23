@@ -1,5 +1,8 @@
 <?php
 
+use App\Exceptions\CircularDependencyException;
+use App\Exceptions\ParseException;
+use App\Exceptions\UndefinedVariableException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,9 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         // Globally handle formula validation errors as 422 JSON responses
-        $exceptions->render(function (\App\Exceptions\ParseException|\App\Exceptions\UndefinedVariableException|\App\Exceptions\CircularDependencyException $e) {
+        $exceptions->render(function (ParseException|UndefinedVariableException|CircularDependencyException $e) {
             return response()->json(
-                ['message' => $e->getMessage()], 
+                ['message' => $e->getMessage()],
                 Response::HTTP_UNPROCESSABLE_ENTITY
             );
         });

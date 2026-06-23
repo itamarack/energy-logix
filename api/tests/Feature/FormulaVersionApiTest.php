@@ -3,10 +3,10 @@
 use App\Models\CommissionCalculation;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
+use Tests\TestCase;
 
-test('GET /api/v1/formula-versions returns 200 with a JSON array of resources', function (): void 
-{
-    /** @var \Tests\TestCase $this */
+test('GET /api/v1/formula-versions returns 200 with a JSON array of resources', function (): void {
+    /** @var TestCase $this */
     FormulaVersion::factory()->count(3)->create();
 
     $response = $this->getJson('/api/v1/formula-versions');
@@ -22,9 +22,8 @@ test('GET /api/v1/formula-versions returns 200 with a JSON array of resources', 
     ]);
 });
 
-test('POST /api/v1/formula-versions with a valid formula persists the record and returns 201', function (): void 
-{
-    /** @var \Tests\TestCase $this */
+test('POST /api/v1/formula-versions with a valid formula persists the record and returns 201', function (): void {
+    /** @var TestCase $this */
     $beforeCount = FormulaVersion::query()->count();
 
     $payload = [
@@ -43,9 +42,8 @@ test('POST /api/v1/formula-versions with a valid formula persists the record and
     expect(FormulaVersion::query()->count())->toBe($beforeCount + 1);
 });
 
-test('POST /api/v1/formula-versions with a circular dependency returns 422 with cycle member names', function (): void 
-{
-    /** @var \Tests\TestCase $this */
+test('POST /api/v1/formula-versions with a circular dependency returns 422 with cycle member names', function (): void {
+    /** @var TestCase $this */
     $payload = [
         'name' => 'Circular Formula',
         'expression' => 'base_commission + 0',
@@ -64,9 +62,8 @@ test('POST /api/v1/formula-versions with a circular dependency returns 422 with 
         ->and($body)->toContain('AdjustedCommission');
 });
 
-test('POST /api/v1/formula-versions with a syntax error returns 422', function (): void 
-{
-    /** @var \Tests\TestCase $this */
+test('POST /api/v1/formula-versions with a syntax error returns 422', function (): void {
+    /** @var TestCase $this */
     $payload = [
         'name' => 'Bad Syntax Formula',
         'expression' => 'annual_usage @ contract_value',
@@ -78,9 +75,8 @@ test('POST /api/v1/formula-versions with a syntax error returns 422', function (
     $response->assertUnprocessable();
 });
 
-test('POST /api/v1/formula-versions referencing an undefined variable returns 422 with variable name', function (): void 
-{
-    /** @var \Tests\TestCase $this */
+test('POST /api/v1/formula-versions referencing an undefined variable returns 422 with variable name', function (): void {
+    /** @var TestCase $this */
     $payload = [
         'name' => 'Undefined Var Formula',
         'expression' => 'annual_usage * peak_demand',
@@ -93,10 +89,8 @@ test('POST /api/v1/formula-versions referencing an undefined variable returns 42
     expect($response->getContent())->toContain('peak_demand');
 });
 
-test('POST /api/v1/formula-versions/{id}/activate activates target and deactivates all others', function (): void 
-{
-    /** @var \Tests\TestCase $this */
-
+test('POST /api/v1/formula-versions/{id}/activate activates target and deactivates all others', function (): void {
+    /** @var TestCase $this */
     $versionA = FormulaVersion::factory()->create(['is_active' => true]);
 
     $versionB = FormulaVersion::factory()->create(['is_active' => false]);
@@ -120,10 +114,8 @@ test('POST /api/v1/formula-versions/{id}/activate activates target and deactivat
     expect(FormulaVersion::where('is_active', true)->count())->toBe(1);
 });
 
-test('POST /api/v1/formula-versions/{id}/deactivate deactivates target', function (): void 
-{
-    /** @var \Tests\TestCase $this */
-
+test('POST /api/v1/formula-versions/{id}/deactivate deactivates target', function (): void {
+    /** @var TestCase $this */
     $versionA = FormulaVersion::factory()->create(['is_active' => true]);
 
     $response = $this->postJson("/api/v1/formula-versions/{$versionA->id}/deactivate");
@@ -138,9 +130,8 @@ test('POST /api/v1/formula-versions/{id}/deactivate deactivates target', functio
     expect(FormulaVersion::where('is_active', true)->count())->toBe(0);
 });
 
-test('POST /api/v1/formula-versions/{id}/simulate returns simulation result and does not persist records', function (): void 
-{
-    /** @var \Tests\TestCase $this */
+test('POST /api/v1/formula-versions/{id}/simulate returns simulation result and does not persist records', function (): void {
+    /** @var TestCase $this */
     FormulaVersion::factory()->create([
         'expression' => 'annual_usage * 0.05',
         'variables' => [],
@@ -166,15 +157,14 @@ test('POST /api/v1/formula-versions/{id}/simulate returns simulation result and 
             'current_total_commission',
             'new_total_commission',
             'difference',
-        ]
+        ],
     ]);
 
     expect(CommissionCalculation::query()->count())->toBe($beforeCount);
 });
 
-test('PUT /api/v1/formula-versions/{id} updates the formula and returns 200', function (): void 
-{
-    /** @var \Tests\TestCase $this */
+test('PUT /api/v1/formula-versions/{id} updates the formula and returns 200', function (): void {
+    /** @var TestCase $this */
     $version = FormulaVersion::factory()->create([
         'name' => 'Old Name',
         'expression' => 'annual_usage * 1',

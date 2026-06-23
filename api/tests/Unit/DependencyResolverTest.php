@@ -2,15 +2,18 @@
 
 use App\Exceptions\CircularDependencyException;
 use App\Services\DependencyResolver;
-use App\Services\FormulaEvaluator;
+use Database\Seeders\FormulaVariableSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\ExpressionLanguage\Lexer;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, \Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
-    \Illuminate\Support\Facades\Cache::flush();
-    $this->resolver = new DependencyResolver(new Lexer());
+    $this->seed(FormulaVariableSeeder::class);
+    Cache::flush();
+    $this->resolver = new DependencyResolver(new Lexer);
 });
 
 it('returns empty array for empty variables list', function (): void {

@@ -8,21 +8,25 @@ use App\Services\CommissionSimulator;
 use App\Services\DependencyResolver;
 use App\Services\FormulaEvaluator;
 use App\Services\FormulaValidator;
+use Database\Seeders\FormulaVariableSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Symfony\Component\ExpressionLanguage\Lexer;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
-    /** @var \Tests\TestCase $this */
-    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
-    \Illuminate\Support\Facades\Cache::flush();
+    /** @var TestCase $this */
+    $this->seed(FormulaVariableSeeder::class);
+    Cache::flush();
 });
 
 function makeSimulator(): CommissionSimulator
 {
-    $evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
-    $resolver = new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer());
+    $evaluator = new FormulaEvaluator(new ExpressionLanguage);
+    $resolver = new DependencyResolver(new Lexer);
     $validator = new FormulaValidator($evaluator, $resolver);
 
     return new CommissionSimulator($validator, $evaluator, $resolver);

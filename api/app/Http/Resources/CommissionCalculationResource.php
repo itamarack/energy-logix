@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\CommissionCalculation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\CommissionCalculation
+ * @mixin CommissionCalculation
  */
 class CommissionCalculationResource extends JsonResource
 {
