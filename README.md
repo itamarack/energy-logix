@@ -12,6 +12,7 @@ The system supports creating custom formulas with math expressions, calculated i
 4. **Impact Simulation**: Before activating a new formula, a simulation dry-runs the formula across the database to compare current commissions vs new commissions, protecting revenue and preventing mistakes.
 5. **Dependency Validation**: Automatically detects circular dependencies (e.g. `A = B`, `B = A`) using topological sorting to prevent infinite loops.
 6. **Audit Trails**: Every calculation logs its date, the formula version used, all input values, and the step-by-step breakdown of how the final commission was calculated.
+7. **Closing Reports**: When a formula version is deactivated, a background job automatically generates a comprehensive CSV report of all calculations performed under that version, available for instant download.
 
 ---
 
@@ -96,6 +97,7 @@ All endpoints are versioned under `/api/v1/`.
 | `PUT` | `/api/v1/formula-versions/{id}` | Update an inactive formula version |
 | `POST` | `/api/v1/formula-versions/{id}/activate` | Activate a formula version |
 | `POST` | `/api/v1/formula-versions/{id}/deactivate`| Deactivate a formula version |
+| `GET` | `/api/v1/formula-versions/{id}/report` | Download the CSV closing report for a deactivated formula |
 | `POST` | `/api/v1/formula-versions/{id}/simulate` | Dry-run simulation across all contracts |
 | `GET` | `/api/v1/contracts` | List all contracts |
 | `POST` | `/api/v1/contracts/{id}/calculate` | Calculate commission manually |

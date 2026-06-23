@@ -26,6 +26,7 @@ Business logic is encapsulated in single-responsibility Action classes and Servi
 ### Events & Background Queues
 When a new Formula Version is activated, it triggers the `FormulaVersionActivated` event. A dedicated listener (`RecalculateCommissionsListener`) catches this event and dispatches a `CalculateCommission` Job to the queue for *every* contract. 
 - **Why?** This ensures the HTTP request returns instantly, even if there are millions of contracts that need their commissions recalculated. The heavy lifting happens asynchronously in the background.
+- Similarly, when a formula version is deactivated, a `FormulaVersionDeactivated` event is fired. A listener dispatches a `GenerateClosingReport` job which stream-writes a CSV report of all historical calculations for that version in a memory-efficient manner using `spatie/simple-excel`.
 
 ---
 
