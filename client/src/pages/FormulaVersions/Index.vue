@@ -36,7 +36,7 @@ const { mutate: activate } = useActivateFormulaVersion()
           </div>
           <RouterLink
             :to="FORMULA_VERSION_ROUTES.CREATE"
-            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
+            class="premium-button"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -62,29 +62,28 @@ const { mutate: activate } = useActivateFormulaVersion()
         </div>
       </div>
 
-      <!-- Loading skeleton -->
-      <div v-if="isLoading" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div v-if="isLoading" class="premium-card">
         <div v-for="i in 4" :key="i" class="flex items-center gap-4 border-b border-slate-100 px-6 py-4 last:border-0">
-          <div class="h-4 w-16 animate-pulse rounded bg-slate-100" />
-          <div class="h-4 w-48 animate-pulse rounded bg-slate-100" />
-          <div class="h-4 w-32 animate-pulse rounded bg-slate-100" />
+          <div class="h-4 w-16 animate-pulse rounded-full bg-slate-200/50" />
+          <div class="h-4 w-48 animate-pulse rounded-full bg-slate-200/50" />
+          <div class="h-4 w-32 animate-pulse rounded-full bg-slate-200/50" />
         </div>
       </div>
 
-      <div v-else class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full divide-y divide-slate-200">
-          <thead class="bg-slate-50">
+      <div v-else class="premium-card">
+        <table class="min-w-full divide-y divide-slate-100">
+          <thead class="bg-slate-50/50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Version</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Name</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Description</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Created</th>
-              <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">Actions</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Version</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Name</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Description</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Status</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Created</th>
+              <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-widest text-slate-500">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 bg-white">
-            <tr v-for="fv in filtered" :key="fv.id" class="transition-colors hover:bg-slate-50">
+          <tbody class="divide-y divide-slate-100/80 bg-white/50">
+            <tr v-for="fv in filtered" :key="fv.id" class="transition-all duration-200 hover:bg-slate-50/80">
               <td class="whitespace-nowrap px-6 py-4 font-mono text-sm font-medium text-slate-500">v{{ fv.version_number }}</td>
               <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900">
                 <RouterLink :to="FORMULA_VERSION_ROUTES.SHOW(fv.id)" class="hover:text-blue-600 hover:underline">
@@ -94,24 +93,27 @@ const { mutate: activate } = useActivateFormulaVersion()
               <td class="max-w-xs truncate px-6 py-4 text-sm text-slate-500">{{ fv.description ?? '—' }}</td>
               <td class="whitespace-nowrap px-6 py-4">
                 <span
-                  :class="fv.is_active ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20' : 'bg-slate-100 text-slate-600'"
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  :class="fv.is_active ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20' : 'bg-slate-100/80 text-slate-600'"
+                  class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider"
                 >
-                  <span v-if="fv.is_active" class="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span v-if="fv.is_active" class="mr-2 relative flex h-2 w-2">
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                  </span>
                   {{ fv.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
-                {{ new Date(fv.created_at).toLocaleDateString() }}
+              <td class="whitespace-nowrap px-6 py-5 text-sm text-slate-500">
+                {{ new Date(fv.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}
               </td>
-              <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                <div class="flex items-center justify-end gap-3">
-                  <RouterLink :to="FORMULA_VERSION_ROUTES.SHOW(fv.id)" class="font-medium text-blue-600 hover:text-blue-800">View</RouterLink>
+              <td class="whitespace-nowrap px-6 py-5 text-right text-sm">
+                <div class="flex items-center justify-end gap-4">
+                  <RouterLink :to="FORMULA_VERSION_ROUTES.SHOW(fv.id)" class="text-[13px] font-semibold text-indigo-600 transition-colors hover:text-indigo-800">View Details</RouterLink>
                   <button
                     type="button"
                     :disabled="fv.is_active"
-                    :class="fv.is_active ? 'cursor-not-allowed text-slate-300' : 'font-medium text-emerald-600 hover:text-emerald-800'"
-                    class="text-sm transition-colors"
+                    :class="fv.is_active ? 'cursor-not-allowed opacity-30 grayscale' : 'font-semibold text-emerald-600 hover:text-emerald-700'"
+                    class="text-[13px] transition-all"
                     @click="activate(fv.id)"
                   >
                     Activate

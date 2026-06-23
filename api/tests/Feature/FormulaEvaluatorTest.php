@@ -6,7 +6,7 @@ use App\Exceptions\UndefinedVariableException;
 use App\Services\FormulaEvaluator;
 
 beforeEach(function () {
-    $this->evaluator = new FormulaEvaluator;
+    $this->evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
 });
 
 // ---------------------------------------------------------------------------
@@ -54,12 +54,14 @@ test('evaluate resolves multiple variables', function () {
 // ParseException
 // ---------------------------------------------------------------------------
 
-test('evaluate throws ParseException for exponentiation operator **', function () {
-    $this->evaluator->evaluate('annual_usage ** contract_value', [
+test('evaluate handles exponentiation operator **', function () {
+    $result = $this->evaluator->evaluate('annual_usage ** contract_value', [
         'annual_usage' => 5000,
         'contract_value' => 2,
     ]);
-})->throws(ParseException::class);
+
+    expect($result)->toBe(25000000.0);
+});
 
 test('evaluate throws ParseException for unrecognised at-sign operator', function () {
     $this->evaluator->evaluate('annual_usage @ 5', ['annual_usage' => 100]);
@@ -116,19 +118,6 @@ test('validate throws UndefinedVariableException for variable not in allowed lis
 })->throws(UndefinedVariableException::class, 'unknown');
 
 test('validate throws ParseException for syntactically invalid expression', function () {
-    $this->evaluator->validate('annual_usage ** 2', ['annual_usage']);
+    $this->evaluator->validate('annual_usage @ 2', ['annual_usage']);
 })->throws(ParseException::class);
 
-// ---------------------------------------------------------------------------
-// tokenise()
-// ---------------------------------------------------------------------------
-
-test('tokenise produces correct token types', function () {
-    $tokens = $this->evaluator->tokenise('A + 1.5 * (B - 2)');
-
-    $types = array_column($tokens, 'type');
-
-    expect($types)->toEqual([
-        'IDENT', 'PLUS', 'NUMBER', 'STAR', 'LPAREN', 'IDENT', 'MINUS', 'NUMBER', 'RPAREN',
-    ]);
-});

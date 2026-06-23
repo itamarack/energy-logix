@@ -84,7 +84,7 @@ test('B: formula referencing undefined variable is rejected with 422 and variabl
 test('C: syntactically invalid expression is rejected with 422', function (): void {
     $payload = [
         'name' => 'Invalid Syntax Formula',
-        'expression' => 'annual_usage ** contract_value',
+        'expression' => 'annual_usage @ contract_value',
         'variables' => [],
     ];
 

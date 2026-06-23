@@ -49,33 +49,33 @@ function formatCurrency(value: number) {
       </div>
 
       <!-- Loading skeleton -->
-      <div v-if="isLoading" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div v-if="isLoading" class="premium-card">
         <div v-for="i in 5" :key="i" class="flex items-center gap-4 border-b border-slate-100 px-6 py-4 last:border-0">
-          <div class="h-4 w-40 animate-pulse rounded bg-slate-100" />
-          <div class="h-4 w-32 animate-pulse rounded bg-slate-100" />
-          <div class="h-4 w-24 animate-pulse rounded bg-slate-100" />
+          <div class="h-4 w-40 animate-pulse rounded-full bg-slate-200/50" />
+          <div class="h-4 w-32 animate-pulse rounded-full bg-slate-200/50" />
+          <div class="h-4 w-24 animate-pulse rounded-full bg-slate-200/50" />
         </div>
       </div>
 
-      <div v-else class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full divide-y divide-slate-200">
-          <thead class="bg-slate-50">
+      <div v-else class="premium-card">
+        <table class="min-w-full divide-y divide-slate-100">
+          <thead class="bg-slate-50/50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Formula Version</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Contract</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Commission Result</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Calculated At</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Formula Version</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Contract</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Commission Result</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Calculated At</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 bg-white">
-            <tr v-for="calc in filtered" :key="calc.id" class="cursor-pointer transition-colors hover:bg-slate-50" @click="router.push(CALCULATION_ROUTES.SHOW(calc.id))">
-              <td class="whitespace-nowrap px-6 py-4 text-sm">
-                <span class="font-medium text-slate-900">{{ calc.formula_version?.name ?? '—' }}</span>
-                <span class="ml-1.5 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-500">v{{ calc.formula_version?.version_number }}</span>
+          <tbody class="divide-y divide-slate-100/80 bg-white/50">
+            <tr v-for="calc in filtered" :key="calc.id" class="cursor-pointer transition-all duration-200 hover:bg-slate-50/80" @click="router.push(CALCULATION_ROUTES.SHOW(calc.id))">
+              <td class="whitespace-nowrap px-6 py-5 text-[13px] font-semibold">
+                <span class="text-slate-900">{{ calc.formula_version?.name ?? '—' }}</span>
+                <span class="ml-2 inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-600 ring-1 ring-inset ring-slate-500/10">v{{ calc.formula_version?.version_number }}</span>
               </td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-700">{{ calc.contract?.name ?? '—' }}</td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-slate-900">{{ formatCurrency(calc.result) }}</td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
+              <td class="whitespace-nowrap px-6 py-5 text-[13px] font-medium text-slate-600">{{ calc.contract?.name ?? '—' }}</td>
+              <td class="whitespace-nowrap px-6 py-5 text-[13px] font-bold text-slate-900">{{ formatCurrency(calc.result) }}</td>
+              <td class="whitespace-nowrap px-6 py-5 text-[13px] text-slate-500">
                 {{ new Date(calc.calculated_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
               </td>
             </tr>

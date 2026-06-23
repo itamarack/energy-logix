@@ -11,8 +11,8 @@ use App\Services\FormulaValidator;
  * @phpstan-type Variable array{name: string, expression: string}
  */
 beforeEach(function (): void {
-    $evaluator = new FormulaEvaluator;
-    $this->validator = new FormulaValidator($evaluator, new DependencyResolver($evaluator));
+    $evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
+    $this->validator = new FormulaValidator($evaluator, new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer()));
 });
 
 // -------------------------------------------------------------------------
@@ -41,13 +41,13 @@ it('passes for a valid formula with multiple chained intermediate variables', fu
 // -------------------------------------------------------------------------
 
 it('raises ParseException for a syntax error in the main expression', function (): void {
-    expect(fn () => $this->validator->validate('annual_usage ** contract_value', []))
+    expect(fn () => $this->validator->validate('annual_usage @ contract_value', []))
         ->toThrow(ParseException::class);
 });
 
 it('raises ParseException for a syntax error in an intermediate variable expression', function (): void {
     expect(fn () => $this->validator->validate('base_commission * 1.1', [
-        ['name' => 'base_commission', 'expression' => 'annual_usage ** 2'],
+        ['name' => 'base_commission', 'expression' => 'annual_usage @ 2'],
     ]))->toThrow(ParseException::class);
 });
 

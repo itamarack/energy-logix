@@ -78,42 +78,44 @@ function formatCurrency(value: number) {
       </div>
 
       <!-- Loading skeleton -->
-      <div v-if="isLoading" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div v-if="isLoading" class="premium-card">
         <div v-for="i in 5" :key="i" class="flex items-center gap-4 border-b border-slate-100 px-6 py-4 last:border-0">
-          <div class="h-4 w-40 animate-pulse rounded bg-slate-100" />
-          <div class="h-4 w-24 animate-pulse rounded bg-slate-100" />
-          <div class="h-4 w-24 animate-pulse rounded bg-slate-100" />
+          <div class="h-4 w-40 animate-pulse rounded-full bg-slate-200/50" />
+          <div class="h-4 w-24 animate-pulse rounded-full bg-slate-200/50" />
+          <div class="h-4 w-24 animate-pulse rounded-full bg-slate-200/50" />
         </div>
       </div>
 
-      <div v-else class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table class="min-w-full divide-y divide-slate-200">
-          <thead class="bg-slate-50">
+      <div v-else class="premium-card">
+        <table class="min-w-full divide-y divide-slate-100">
+          <thead class="bg-slate-50/50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Name</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Annual Usage (kWh)</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Contract Value ($)</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Length (months)</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Risk Score</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Last Commission</th>
-              <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">Actions</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Name</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Annual Usage (kWh)</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Contract Value ($)</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Length (months)</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Risk Score</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-slate-500">Last Commission</th>
+              <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-widest text-slate-500">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 bg-white">
-            <tr v-for="contract in filtered" :key="contract.id" class="transition-colors hover:bg-slate-50">
-              <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900">{{ contract.name }}</td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-700">{{ contract.annual_usage.toLocaleString('en-US') }}</td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-700">{{ contract.contract_value.toLocaleString('en-US') }}</td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-700">{{ contract.contract_length.toLocaleString('en-US') }}</td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-700">{{ contract.risk_score.toLocaleString('en-US') }}</td>
-              <td class="whitespace-nowrap px-6 py-4 text-sm">
-                <span v-if="lastCommissions[contract.id] !== undefined" class="font-semibold text-blue-700">
+          <tbody class="divide-y divide-slate-100/80 bg-white/50">
+            <tr v-for="contract in filtered" :key="contract.id" class="transition-all duration-200 hover:bg-slate-50/80">
+              <td class="whitespace-nowrap px-6 py-5 text-sm font-semibold text-slate-900">{{ contract.name }}</td>
+              <td class="whitespace-nowrap px-6 py-5 text-[13px] font-medium text-slate-600">{{ contract.annual_usage.toLocaleString('en-US') }}</td>
+              <td class="whitespace-nowrap px-6 py-5 text-[13px] font-medium text-slate-600">{{ contract.contract_value.toLocaleString('en-US') }}</td>
+              <td class="whitespace-nowrap px-6 py-5 text-[13px] font-medium text-slate-600">{{ contract.contract_length.toLocaleString('en-US') }}</td>
+              <td class="whitespace-nowrap px-6 py-5 text-[13px] font-medium text-slate-600">
+                <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-500/10">{{ contract.risk_score.toLocaleString('en-US') }} / 10</span>
+              </td>
+              <td class="whitespace-nowrap px-6 py-5 text-sm">
+                <span v-if="lastCommissions[contract.id] !== undefined" class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-[13px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
                   {{ formatCurrency(lastCommissions[contract.id]) }}
                 </span>
-                <span v-else class="text-slate-400">—</span>
+                <span v-else class="text-slate-400 font-mono text-sm">—</span>
               </td>
-              <td class="whitespace-nowrap px-6 py-4 text-right">
-                <button type="button" class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 transition-colors hover:text-blue-800 disabled:cursor-not-allowed disabled:opacity-50" :disabled="loadingIds.has(contract.id)" @click="calculate(contract.id)">
+              <td class="whitespace-nowrap px-6 py-5 text-right">
+                <button type="button" class="premium-button !px-3 !py-1.5 !text-[12px] !rounded-lg" :disabled="loadingIds.has(contract.id)" @click="calculate(contract.id)">
                   <svg v-if="loadingIds.has(contract.id)" class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />

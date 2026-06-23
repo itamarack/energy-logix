@@ -20,9 +20,9 @@ uses(TestCase::class, RefreshDatabase::class);
  */
 function makeCalculator(): CommissionCalculator
 {
-    $evaluator = new FormulaEvaluator;
+    $evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
 
-    return new CommissionCalculator($evaluator, new DependencyResolver($evaluator));
+    return new CommissionCalculator($evaluator, new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer()));
 }
 
 // -------------------------------------------------------------------------

@@ -84,7 +84,7 @@ test('POST /api/v1/formula-versions with a circular dependency returns 422 with 
 test('POST /api/v1/formula-versions with a syntax error returns 422', function (): void {
     $payload = [
         'name' => 'Bad Syntax Formula',
-        'expression' => 'annual_usage ** contract_value',
+        'expression' => 'annual_usage @ contract_value',
         'variables' => [],
     ];
 

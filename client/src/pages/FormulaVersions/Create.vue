@@ -153,89 +153,98 @@ function handleSubmit() {
       <form @submit.prevent="handleSubmit">
         <div class="lg:grid lg:grid-cols-3 lg:gap-8">
           <div class="lg:col-span-2">
-            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="premium-card p-6 sm:p-8">
               <!-- Name -->
-              <div class="mb-5">
-                <label for="name" class="block text-sm font-medium text-slate-700">
+              <div class="mb-6">
+                <label for="name" class="block text-[13px] font-bold uppercase tracking-widest text-slate-500">
                   Name <span class="text-red-500">*</span>
                 </label>
                 <input
                   id="name"
                   v-model="form.name"
                   type="text"
-                  :class="['mt-1 block w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2', errors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20']"
+                  :class="['mt-2 block w-full rounded-xl border bg-white px-4 py-3 text-[15px] font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all duration-200', errors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-200/80 focus:border-indigo-500 focus:ring-indigo-500/20']"
                   placeholder="e.g. Standard Commission v2"
                 />
                 <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
               </div>
 
               <!-- Description -->
-              <div class="mb-5">
-                <label for="description" class="block text-sm font-medium text-slate-700">Description</label>
+              <div class="mb-8">
+                <label for="description" class="block text-[13px] font-bold uppercase tracking-widest text-slate-500">Description</label>
                 <textarea
                   id="description"
                   v-model="form.description"
                   rows="3"
-                  class="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  class="mt-2 block w-full rounded-xl border border-slate-200/80 bg-white px-4 py-3 text-[15px] text-slate-700 placeholder:text-slate-400 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   placeholder="Optional description of this formula"
                 />
               </div>
 
               <!-- Expression -->
-              <div class="mb-5">
-                <label for="expression" class="block text-sm font-medium text-slate-700">
+              <div class="mb-8">
+                <label for="expression" class="block text-[13px] font-bold uppercase tracking-widest text-slate-500 mb-2">
                   Expression <span class="text-red-500">*</span>
                 </label>
-                <textarea
-                  id="expression"
-                  ref="expressionEl"
-                  v-model="form.expression"
-                  rows="4"
-                  :class="['mt-1 block w-full rounded-lg border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2', errors.expression ? 'border-red-400 bg-slate-950 text-emerald-400 placeholder:text-slate-600 focus:border-red-400 focus:ring-red-400/20' : 'border-slate-700 bg-slate-950 text-emerald-400 placeholder:text-slate-600 focus:border-blue-500 focus:ring-blue-500/20']"
-                  placeholder="e.g. AnnualUsage * 0.05 + ContractValue * 0.01"
-                />
+                <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 py-2">
+                    <span class="text-[11px] font-mono text-slate-500">formula.expr</span>
+                  </div>
+                  <textarea
+                    id="expression"
+                    ref="expressionEl"
+                    v-model="form.expression"
+                    rows="4"
+                    :class="['ide-textarea border-0 rounded-none focus:ring-0', errors.expression ? 'text-red-600' : '']"
+                    placeholder="e.g. AnnualUsage * 0.05 + ContractValue * 0.01"
+                    spellcheck="false"
+                  />
+                </div>
                 <p v-if="errors.expression" class="mt-1 text-sm text-red-600">{{ errors.expression }}</p>
               </div>
 
               <!-- Intermediate Variables -->
               <div>
-                <div class="mb-3 flex items-center justify-between">
-                  <label class="block text-sm font-medium text-slate-700">Intermediate Variables</label>
-                  <button type="button" class="text-sm font-medium text-blue-600 hover:text-blue-800" @click="addVariable">
+                <div class="mb-4 flex items-center justify-between">
+                  <label class="block text-[13px] font-bold uppercase tracking-widest text-slate-500">Intermediate Variables</label>
+                  <button type="button" class="text-[13px] font-bold text-indigo-600 transition-colors hover:text-indigo-800" @click="addVariable">
                     + Add Variable
                   </button>
                 </div>
 
-                <p v-if="form.variables.length === 0" class="rounded-lg border border-dashed border-slate-200 py-4 text-center text-sm text-slate-400">
+                <p v-if="form.variables.length === 0" class="rounded-xl border border-dashed border-slate-300 bg-slate-50/50 py-8 text-center text-sm font-medium text-slate-500">
                   No intermediate variables added yet.
                 </p>
 
-                <div v-for="(variable, index) in form.variables" :key="index" class="mb-3 space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <div class="flex items-center gap-3">
-                    <div class="flex-1">
-                      <label class="mb-1 block text-xs font-medium text-slate-500">Variable Name</label>
-                      <input
-                        v-model="variable.name"
-                        type="text"
-                        class="block w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                        placeholder="e.g. BaseCommission"
-                      />
+                <div v-for="(variable, index) in form.variables" :key="index" class="group mb-4 space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-all duration-200 hover:border-indigo-200 hover:bg-white">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-1 space-y-4">
+                      <div>
+                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">Variable Name</label>
+                        <input
+                          v-model="variable.name"
+                          type="text"
+                          class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-[13px] font-bold text-indigo-700 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                          placeholder="e.g. BaseCommission"
+                        />
+                      </div>
+                      <div>
+                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">Expression</label>
+                        <input
+                          v-model="variable.expression"
+                          type="text"
+                          :ref="(el) => { varExprEls[index] = el as HTMLInputElement }"
+                          class="ide-textarea !py-2 !text-[13px]"
+                          placeholder="Expression"
+                          spellcheck="false"
+                        />
+                      </div>
                     </div>
-                    <button type="button" class="mt-5 text-slate-400 transition-colors hover:text-red-500" aria-label="Remove variable" @click="removeVariable(index)">
-                      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    <button type="button" class="mt-6 text-slate-400 opacity-50 transition-all hover:scale-110 hover:text-red-500 hover:opacity-100 group-hover:opacity-100" aria-label="Remove variable" @click="removeVariable(index)">
+                      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
-                  </div>
-                  <div>
-                    <label class="mb-1 block text-xs font-medium text-slate-500">Expression</label>
-                    <input
-                      v-model="variable.expression"
-                      type="text"
-                      :ref="(el) => { varExprEls[index] = el as HTMLInputElement }"
-                      class="block w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                      placeholder="Expression"
-                    />
                   </div>
                 </div>
 
@@ -247,11 +256,11 @@ function handleSubmit() {
               <button
                 type="submit"
                 :disabled="isPending"
-                class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500 disabled:opacity-50"
+                class="premium-button"
               >
                 {{ isPending ? 'Saving…' : 'Save Formula' }}
               </button>
-              <RouterLink :to="FORMULA_VERSION_ROUTES.INDEX" class="text-sm font-medium text-slate-600 hover:text-slate-900">
+              <RouterLink :to="FORMULA_VERSION_ROUTES.INDEX" class="text-[13px] font-bold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900">
                 Cancel
               </RouterLink>
             </div>
@@ -259,36 +268,44 @@ function handleSubmit() {
 
           <!-- Sidebar -->
           <div class="mt-6 lg:col-span-1 lg:mt-0">
-            <div class="sticky top-24 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 class="mb-1 text-sm font-semibold text-slate-700">Available Variables</h2>
-              <p class="mb-4 text-xs text-slate-400">Type <strong>@</strong> in any expression field to insert a variable.</p>
-              <ul class="space-y-4">
-                <li class="flex items-start gap-3">
-                  <span class="mt-0.5 text-lg">⚡</span>
+            <div class="premium-card sticky top-24 p-6">
+              <h2 class="mb-1 text-[13px] font-bold uppercase tracking-widest text-slate-500">Available Variables</h2>
+              <p class="mb-6 text-[13px] text-slate-400">Type <strong class="text-indigo-500">@</strong> in any expression field to insert a variable.</p>
+              <ul class="space-y-5">
+                <li class="flex items-start gap-4">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-500 ring-1 ring-amber-500/20">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  </div>
                   <div>
-                    <p class="font-mono text-sm font-semibold text-blue-700">AnnualUsage</p>
-                    <p class="text-xs text-slate-500">Annual usage in kWh</p>
+                    <p class="font-mono text-[13px] font-bold text-indigo-700">AnnualUsage</p>
+                    <p class="text-[12px] font-medium text-slate-500">Annual usage in kWh</p>
                   </div>
                 </li>
-                <li class="flex items-start gap-3">
-                  <span class="mt-0.5 text-lg">💰</span>
+                <li class="flex items-start gap-4">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-500 ring-1 ring-emerald-500/20">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
                   <div>
-                    <p class="font-mono text-sm font-semibold text-blue-700">ContractValue</p>
-                    <p class="text-xs text-slate-500">Total contract value in $</p>
+                    <p class="font-mono text-[13px] font-bold text-indigo-700">ContractValue</p>
+                    <p class="text-[12px] font-medium text-slate-500">Total contract value in $</p>
                   </div>
                 </li>
-                <li class="flex items-start gap-3">
-                  <span class="mt-0.5 text-lg">📅</span>
+                <li class="flex items-start gap-4">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-500 ring-1 ring-blue-500/20">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  </div>
                   <div>
-                    <p class="font-mono text-sm font-semibold text-blue-700">ContractLength</p>
-                    <p class="text-xs text-slate-500">Duration in months</p>
+                    <p class="font-mono text-[13px] font-bold text-indigo-700">ContractLength</p>
+                    <p class="text-[12px] font-medium text-slate-500">Duration in months</p>
                   </div>
                 </li>
-                <li class="flex items-start gap-3">
-                  <span class="mt-0.5 text-lg">⚠️</span>
+                <li class="flex items-start gap-4">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-500 ring-1 ring-rose-500/20">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  </div>
                   <div>
-                    <p class="font-mono text-sm font-semibold text-blue-700">RiskScore</p>
-                    <p class="text-xs text-slate-500">Risk factor 1–10</p>
+                    <p class="font-mono text-[13px] font-bold text-indigo-700">RiskScore</p>
+                    <p class="text-[12px] font-medium text-slate-500">Risk factor 1–10</p>
                   </div>
                 </li>
               </ul>

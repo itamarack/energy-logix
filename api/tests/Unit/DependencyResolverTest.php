@@ -8,7 +8,7 @@ use App\Services\FormulaEvaluator;
  * @phpstan-type Variable array{name: string, expression: string}
  */
 beforeEach(function (): void {
-    $this->resolver = new DependencyResolver(new FormulaEvaluator);
+    $this->resolver = new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer());
 });
 
 // -------------------------------------------------------------------------

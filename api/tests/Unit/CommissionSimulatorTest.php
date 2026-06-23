@@ -22,8 +22,8 @@ uses(TestCase::class, RefreshDatabase::class);
  */
 function makeSimulator(): CommissionSimulator
 {
-    $evaluator = new FormulaEvaluator;
-    $resolver = new DependencyResolver($evaluator);
+    $evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
+    $resolver = new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer());
     $validator = new FormulaValidator($evaluator, $resolver);
 
     return new CommissionSimulator($validator, $evaluator, $resolver);
