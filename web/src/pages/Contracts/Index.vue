@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
+import { formatCurrency } from '@/utils/formatCurrency'
 import { useContracts, useCalculateContract } from '@/composables/queries/useContracts'
 import { CONTRACT_ROUTES } from '@/routes/paths/contractRoutes'
 import type { Contract } from '@/types'
@@ -46,9 +47,6 @@ async function calculate(contractId: number) {
   }
 }
 
-function formatCurrency(value: number) {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-}
 
 const columnHelper = createColumnHelper<Contract>()
 
@@ -65,8 +63,8 @@ const columns = [
     cell: info => info.getValue().toLocaleString('en-US'),
   }),
   columnHelper.accessor('contract_value', {
-    header: 'Contract Value ($)',
-    cell: info => info.getValue().toLocaleString('en-US'),
+    header: 'Contract Value',
+    cell: info => formatCurrency(info.getValue()),
   }),
   columnHelper.accessor('contract_length', {
     header: 'Length (months)',

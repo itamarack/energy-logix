@@ -3,6 +3,7 @@ import { computed, ref, h, defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { exportCalculationCsv } from '@/utils/exportCalculationCsv'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { formatDate } from '@/utils/formatDate'
 import AppLayout from '@/layouts/AppLayout.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import DataTable from '@/components/DataTable.vue'
@@ -53,7 +54,7 @@ const columns = [
   }),
   columnHelper.accessor('calculated_at', {
     header: 'Calculated At',
-    cell: info => h('span', { class: 'text-slate-500' }, new Date(info.getValue()).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })),
+    cell: info => h('span', { class: 'text-slate-500' }, formatDate(info.getValue())),
   }),
   columnHelper.display({
     id: 'actions',

@@ -8,6 +8,7 @@ import StatusBadge from '@/components/StatusBadge.vue'
 import StatCard from '@/components/StatCard.vue'
 import { formulaVersionsApi } from '@/api/formulaVersions'
 import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
+import { formatCurrency } from '@/utils/formatCurrency'
 import type { SimulationResult } from '@/types'
 
 const route = useRoute()
@@ -53,9 +54,7 @@ async function runSimulation() {
   }
 }
 
-function formatCurrency(value: number) {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-}
+
 </script>
 
 <template>

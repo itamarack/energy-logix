@@ -9,6 +9,8 @@ import ActionMenu from '@/components/ActionMenu.vue'
 import { useContract, useContractCalculations, useCalculateContract } from '@/composables/queries/useContracts'
 import { CONTRACT_ROUTES } from '@/routes/paths/contractRoutes'
 import { CALCULATION_ROUTES } from '@/routes/paths/calculationRoutes'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { formatDate } from '@/utils/formatDate'
 import type { CommissionCalculation } from '@/types'
 import {
   getCoreRowModel,
@@ -42,9 +44,6 @@ async function calculate() {
   }
 }
 
-function formatCurrency(value: number) {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-}
 
 const columnHelper = createColumnHelper<CommissionCalculation>()
 
@@ -66,7 +65,7 @@ const columns = [
   }),
   columnHelper.accessor('calculated_at', {
     header: 'Calculated At',
-    cell: info => h('span', { class: 'text-sm text-slate-500' }, new Date(info.getValue()).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })),
+    cell: info => h('span', { class: 'text-sm text-slate-500' }, formatDate(info.getValue())),
   }),
   columnHelper.display({
     id: 'actions',
