@@ -15,6 +15,7 @@ use Tests\TestCase;
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
+    /** @var TestCase $this */
     $this->seed(FormulaVariableSeeder::class);
     Cache::flush();
 });
