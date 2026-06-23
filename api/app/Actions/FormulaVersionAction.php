@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\DTOs\FormulaVersionData;
 use App\Events\FormulaVersionActivated;
+use App\Events\FormulaVersionDeactivated;
 use App\Models\FormulaVersion;
 use Closure;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,10 @@ class FormulaVersionAction
         $this->operation = function () use ($formulaVersion) {
             $formulaVersion->is_active = false;
             $formulaVersion->save();
+
+            DB::afterCommit(function () use ($formulaVersion) {
+                FormulaVersionDeactivated::dispatch($formulaVersion);
+            });
         };
 
         return $this;

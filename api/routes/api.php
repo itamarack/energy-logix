@@ -16,6 +16,7 @@ Route::prefix('v1')->name('api.')->group(function (): void {
         Route::post('/', [FormulaVersionController::class, 'store'])->name('formula-versions.store');
         Route::put('/{formulaVersion}', [FormulaVersionController::class, 'update'])->name('formula-versions.update');
         Route::get('/{formulaVersion}', [FormulaVersionController::class, 'show'])->name('formula-versions.show');
+        Route::get('/{formulaVersion}/report', [FormulaVersionController::class, 'downloadReport'])->name('formula-versions.report');
 
         Route::post('/{formulaVersion}/activate', [FormulaVersionController::class, 'activate'])->name('formula-versions.activate');
         Route::post('/{formulaVersion}/deactivate', [FormulaVersionController::class, 'deactivate'])->name('formula-versions.deactivate');

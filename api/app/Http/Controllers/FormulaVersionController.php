@@ -11,7 +11,9 @@ use App\Http\Resources\SimulationResultResource;
 use App\Models\FormulaVersion;
 use App\Services\CommissionSimulator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FormulaVersionController extends Controller
 {
@@ -80,5 +82,16 @@ class FormulaVersionController extends Controller
         return (new SimulationResultResource($result))
             ->response()
             ->setStatusCode(Response::HTTP_OK);
+    }
+
+    public function downloadReport(FormulaVersion $formulaVersion): StreamedResponse|JsonResponse
+    {
+        $filename = "reports/formula_{$formulaVersion->id}_closing_report.csv";
+
+        if (! Storage::exists($filename)) {
+            return response()->json(['message' => 'Report not found or still generating'], Response::HTTP_NOT_FOUND);
+        }
+
+        return Storage::download($filename);
     }
 }
