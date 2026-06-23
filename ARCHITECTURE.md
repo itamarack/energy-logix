@@ -108,9 +108,14 @@ The frontend is built as a Single Page Application (SPA) using **Vue 3** and **V
 I utilize **TanStack Query (Vue Query)** for all remote state management and data fetching. 
 - **Why?** It automatically handles caching, background-refreshing, and loading states. When a mutation occurs (like activating a formula), I simply invalidate the `formulas` and `contracts` query keys, and Vue Query instantly re-fetches the fresh data, ensuring the UI is always perfectly synced with the backend without complex Vuex/Pinia stores.
 
-### Component Structure
+### Component Structure & Logic
 - Components are modularized strictly into `pages/` (full route views) and `components/` (reusable UI elements like Modals, Tables, and Badges).
+- **Composables**: Stateful business logic (e.g., form handling, error parsing, API integrations) is heavily extracted out of `.vue` components into shared Composition API hooks (`useFormulaForm`, `useFormulaAutocomplete`). This ensures `Create` and `Edit` views remain purely declarative and DRY.
 - Styling is handled exclusively with **Tailwind CSS**, adhering to a utility-first methodology to ensure a highly responsive, flat, and modern aesthetic.
+
+### Key Libraries
+- **TributeJS**: Integrated natively into the Vue Composables to provide a robust `@` mention autocomplete system inside textareas, making it incredibly intuitive for admins to type out math expressions.
+- **TanStack Table**: Used for headless data-table rendering, allowing maximum style flexibility with Tailwind while handling pagination and data-model access natively.
 
 ---
 
