@@ -7,26 +7,15 @@ use Symfony\Component\ExpressionLanguage\Lexer;
 
 uses(Tests\TestCase::class, \Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-/**
- * @phpstan-type Variable array{name: string, expression: string}
- */
 beforeEach(function (): void {
     $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
     \Illuminate\Support\Facades\Cache::flush();
     $this->resolver = new DependencyResolver(new Lexer());
 });
 
-// -------------------------------------------------------------------------
-// Empty / trivial cases
-// -------------------------------------------------------------------------
-
 it('returns empty array for empty variables list', function (): void {
     expect($this->resolver->resolve([]))->toBe([]);
 });
-
-// -------------------------------------------------------------------------
-// Valid graphs — correct topological order
-// -------------------------------------------------------------------------
 
 it('returns single variable with no intermediate dependencies', function (): void {
     $result = $this->resolver->resolve([
@@ -42,7 +31,6 @@ it('resolves two-level chain where B depends on A', function (): void {
         ['name' => 'A', 'expression' => 'annual_usage * 2'],
     ]);
 
-    // A must come before B regardless of declaration order
     expect($result)->toBe(['A', 'B']);
 });
 
@@ -77,15 +65,10 @@ it('resolves two independent variables (no edges between them)', function (): vo
         ['name' => 'Beta', 'expression' => 'contract_value * 0.1'],
     ]);
 
-    // Both have zero in-degree; order is stable (insertion order)
     expect($result)->toHaveCount(2)
         ->and($result)->toContain('Alpha')
         ->and($result)->toContain('Beta');
 });
-
-// -------------------------------------------------------------------------
-// Circular dependency detection
-// -------------------------------------------------------------------------
 
 it('raises CircularDependencyException for a 2-node cycle', function (): void {
     expect(fn () => $this->resolver->resolve([
@@ -136,12 +119,8 @@ it('names all three cycle members in message for a 3-node cycle', function (): v
     }
 });
 
-// -------------------------------------------------------------------------
-// Base input variables are NOT treated as dependency edges
-// -------------------------------------------------------------------------
-
 it('does not create edges for base input variables', function (): void {
-    // Both variables reference base inputs only — no inter-variable edges expected
+
     $result = $this->resolver->resolve([
         ['name' => 'Fee', 'expression' => 'annual_usage * risk_score'],
         ['name' => 'Base', 'expression' => 'contract_value * contract_length'],

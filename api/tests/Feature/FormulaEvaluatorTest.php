@@ -9,10 +9,6 @@ beforeEach(function () {
     $this->evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
 });
 
-// ---------------------------------------------------------------------------
-// evaluate() — arithmetic correctness
-// ---------------------------------------------------------------------------
-
 test('evaluate returns correct result for simple multiplication and addition', function () {
     $result = $this->evaluator->evaluate('annual_usage * contract_value + 100', [
         'annual_usage' => 5000,
@@ -50,10 +46,6 @@ test('evaluate resolves multiple variables', function () {
     expect($result)->toBe(1012.5);
 });
 
-// ---------------------------------------------------------------------------
-// ParseException
-// ---------------------------------------------------------------------------
-
 test('evaluate handles exponentiation operator **', function () {
     $result = $this->evaluator->evaluate('annual_usage ** contract_value', [
         'annual_usage' => 5000,
@@ -71,10 +63,6 @@ test('evaluate throws ParseException for unrecognised hash character prefix', fu
     $this->evaluator->evaluate('#annual_usage', ['annual_usage' => 100]);
 })->throws(ParseException::class);
 
-// ---------------------------------------------------------------------------
-// UndefinedVariableException
-// ---------------------------------------------------------------------------
-
 test('evaluate throws UndefinedVariableException for missing variable', function () {
     $this->evaluator->evaluate('annual_usage * peak_demand', ['annual_usage' => 5000]);
 })->throws(UndefinedVariableException::class, 'peak_demand');
@@ -87,10 +75,6 @@ test('UndefinedVariableException message includes the variable name', function (
     }
 });
 
-// ---------------------------------------------------------------------------
-// DivisionByZeroException
-// ---------------------------------------------------------------------------
-
 test('evaluate throws DivisionByZeroException when dividing by zero literal', function () {
     $this->evaluator->evaluate('annual_usage / 0', ['annual_usage' => 5000]);
 })->throws(DivisionByZeroException::class);
@@ -101,10 +85,6 @@ test('evaluate throws DivisionByZeroException when divisor resolves to zero', fu
         'zero_var' => 0,
     ]);
 })->throws(DivisionByZeroException::class);
-
-// ---------------------------------------------------------------------------
-// validate()
-// ---------------------------------------------------------------------------
 
 test('validate passes for expression using only allowed variables', function () {
     expect(fn () => $this->evaluator->validate(

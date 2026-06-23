@@ -1,18 +1,8 @@
 <?php
 
-/**
- * Feature tests for ContractController — Task 13
- *
- * Validates: Requirements 1.2.4, 2.1, 2.3, 2.5, 8.3
- */
-
 use App\Models\CommissionCalculation;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
-
-// ---------------------------------------------------------------------------
-// index
-// ---------------------------------------------------------------------------
 
 test('GET /api/v1/contracts returns 200 with all contracts', function (): void {
     Contract::factory()->count(5)->create();
@@ -30,10 +20,6 @@ test('GET /api/v1/contracts returns 200 with all contracts', function (): void {
     ]);
 });
 
-// ---------------------------------------------------------------------------
-// calculate — with active formula
-// ---------------------------------------------------------------------------
-
 test('POST /api/v1/contracts/{id}/calculate with an active formula returns 200 and persists one new record', function (): void {
     FormulaVersion::factory()->create([
         'expression' => '(annual_usage * 0.05) + (contract_length * 100)',
@@ -41,7 +27,6 @@ test('POST /api/v1/contracts/{id}/calculate with an active formula returns 200 a
         'is_active' => true,
     ]);
 
-    /** @var Contract $contract */
     $contract = Contract::factory()->create([
         'annual_usage' => 10000.0,
         'contract_length' => 24,
@@ -64,15 +49,10 @@ test('POST /api/v1/contracts/{id}/calculate with an active formula returns 200 a
     expect(CommissionCalculation::count())->toBe($beforeCount + 1);
 });
 
-// ---------------------------------------------------------------------------
-// calculate — no active formula
-// ---------------------------------------------------------------------------
-
 test('POST /api/v1/contracts/{id}/calculate with no active formula returns 422 and creates no record', function (): void {
-    // No formula version has is_active = true
+
     FormulaVersion::factory()->create(['is_active' => false]);
 
-    /** @var Contract $contract */
     $contract = Contract::factory()->create();
 
     $beforeCount = CommissionCalculation::count();
@@ -82,6 +62,5 @@ test('POST /api/v1/contracts/{id}/calculate with no active formula returns 422 a
     $response->assertUnprocessable();
     $response->assertJsonPath('message', 'No active formula version exists');
 
-    // No calculation record must have been created
     expect(CommissionCalculation::count())->toBe($beforeCount);
 });

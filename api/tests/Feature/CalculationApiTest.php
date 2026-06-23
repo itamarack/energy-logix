@@ -1,24 +1,13 @@
 <?php
 
-/**
- * Feature tests for CalculationController — Task 14
- *
- * Validates: Requirements 2.4, 5.3, 5.5, 8.3
- */
-
 use App\Models\CommissionCalculation;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
-
-// ---------------------------------------------------------------------------
-// index — ordered newest-first
-// ---------------------------------------------------------------------------
 
 test('GET /api/v1/calculations returns calculations ordered by calculated_at descending', function (): void {
     $formula = FormulaVersion::factory()->create();
     $contracts = Contract::factory()->count(3)->create();
 
-    // Create records with deliberate timestamps out of natural insertion order
     $oldest = CommissionCalculation::factory()->create([
         'formula_version_id' => $formula->id,
         'contract_id' => $contracts[0]->id,
@@ -38,26 +27,19 @@ test('GET /api/v1/calculations returns calculations ordered by calculated_at des
     ]);
 
     $response = $this->getJson('/api/v1/calculations');
-
-    $response->dump();$response->assertOk();
+    $response->assertOk();
 
     $records = $response->json('data');
     expect($records)->toHaveCount(3);
 
-    // The newest record must come first
     expect($records[0]['id'])->toBe($newest->id);
     expect($records[1]['id'])->toBe($middle->id);
     expect($records[2]['id'])->toBe($oldest->id);
 
-    // Verify descending order: each timestamp >= the next
     for ($i = 0; $i < count($records) - 1; $i++) {
         expect($records[$i]['calculated_at'])->toBeGreaterThanOrEqual($records[$i + 1]['calculated_at']);
     }
 });
-
-// ---------------------------------------------------------------------------
-// show — full record returned
-// ---------------------------------------------------------------------------
 
 test('GET /api/v1/calculations/{id} returns the full calculation record', function (): void {
     $formula = FormulaVersion::factory()->create();
@@ -70,8 +52,7 @@ test('GET /api/v1/calculations/{id} returns the full calculation record', functi
     ]);
 
     $response = $this->getJson("/api/v1/calculations/{$calculation->id}");
-
-    $response->dump();$response->assertOk();
+    $response->assertOk();
 
     $data = $response->json('data');
 
