@@ -14,6 +14,7 @@ use Tests\TestCase;
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
+    /** @var \Tests\TestCase $this */
     $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
     \Illuminate\Support\Facades\Cache::flush();
 });
@@ -122,11 +123,11 @@ it('does not create any commission_calculations records during simulation', func
 
     Contract::factory()->count(5)->create();
 
-    $countBefore = CommissionCalculation::count();
+    $countBefore = CommissionCalculation::query()->count();
 
     makeSimulator()->simulate($targetFormula);
 
-    expect(CommissionCalculation::count())->toBe($countBefore);
+    expect(CommissionCalculation::query()->count())->toBe($countBefore);
 });
 
 it('returns zeroes for all totals when no contracts exist', function (): void {
@@ -192,11 +193,11 @@ it('handles intermediate variables correctly during simulation without persistin
         'risk_score' => 5.0,
     ]);
 
-    $countBefore = CommissionCalculation::count();
+    $countBefore = CommissionCalculation::query()->count();
 
     $result = makeSimulator()->simulate($targetFormula);
 
-    expect(CommissionCalculation::count())->toBe($countBefore);
+    expect(CommissionCalculation::query()->count())->toBe($countBefore);
 
     $expectedNew = 2 * 1100.0;
     expect($result->new_total_commission)->toEqual($expectedNew);
