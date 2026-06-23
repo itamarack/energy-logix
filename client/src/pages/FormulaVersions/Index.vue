@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { useFormulaVersions, useActivateFormulaVersion } from '@/composables/queries/useFormulaVersions'
+import { useFormulaVersions, useActivateFormulaVersion, useDeactivateFormulaVersion } from '@/composables/queries/useFormulaVersions'
 import { useFilterStore } from '@/stores/useFilterStore'
 import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 import type { FormulaVersion } from '@/types'
@@ -21,6 +21,7 @@ const filtered = computed(() =>
 )
 
 const { mutate: activate } = useActivateFormulaVersion()
+const { mutate: deactivate } = useDeactivateFormulaVersion()
 </script>
 
 <template>
@@ -109,11 +110,19 @@ const { mutate: activate } = useActivateFormulaVersion()
               <td class="whitespace-nowrap px-6 py-5 text-right text-sm">
                 <div class="flex items-center justify-end gap-4">
                   <RouterLink :to="FORMULA_VERSION_ROUTES.SHOW(fv.id)" class="text-[13px] font-semibold text-indigo-600 transition-colors hover:text-indigo-800">View Details</RouterLink>
+                  <RouterLink :to="FORMULA_VERSION_ROUTES.EDIT(fv.id)" class="text-[13px] font-semibold text-slate-500 transition-colors hover:text-slate-800">Edit</RouterLink>
                   <button
+                    v-if="fv.is_active"
                     type="button"
-                    :disabled="fv.is_active"
-                    :class="fv.is_active ? 'cursor-not-allowed opacity-30 grayscale' : 'font-semibold text-emerald-600 hover:text-emerald-700'"
-                    class="text-[13px] transition-all"
+                    class="text-[13px] font-semibold text-rose-600 transition-all hover:text-rose-700"
+                    @click="deactivate(fv.id)"
+                  >
+                    Deactivate
+                  </button>
+                  <button
+                    v-else
+                    type="button"
+                    class="text-[13px] font-semibold text-emerald-600 transition-all hover:text-emerald-700"
                     @click="activate(fv.id)"
                   >
                     Activate

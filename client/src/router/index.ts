@@ -24,6 +24,11 @@ const router = createRouter({
       component: () => import('@/pages/FormulaVersions/Show.vue'),
     },
     {
+      path: '/formula-versions/:id/edit',
+      name: 'formula-versions.edit',
+      component: () => import('@/pages/FormulaVersions/Edit.vue'),
+    },
+    {
       path: '/contracts',
       name: 'contracts.index',
       component: () => import('@/pages/Contracts/Index.vue'),

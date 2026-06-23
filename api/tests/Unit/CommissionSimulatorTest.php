@@ -13,6 +13,11 @@ use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
+    \Illuminate\Support\Facades\Cache::flush();
+});
+
 // -------------------------------------------------------------------------
 // Helpers
 // -------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\SimulationResult;
-use App\Enums\FormulaVariable;
+
 use App\Models\Contract;
 use App\Models\FormulaVersion;
 
@@ -43,7 +43,11 @@ class CommissionSimulator
 
     private function calculateDryRun(FormulaVersion $formula, Contract $contract): float
     {
-        $variableMap = $contract->only(FormulaVariable::values());
+        $baseVariables = \Illuminate\Support\Facades\Cache::remember('formula_variables', 3600, function () {
+            return \App\Models\FormulaVariable::pluck('name')->toArray();
+        });
+        
+        $variableMap = $contract->only($baseVariables);
 
         $orderedNames = $this->resolver->resolve($formula->variables ?? []);
 

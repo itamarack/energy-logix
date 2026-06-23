@@ -10,9 +10,6 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         // User::factory(10)->create();
@@ -22,6 +19,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
+        $this->call(FormulaVariableSeeder::class);
         $this->call(ContractSeeder::class);
+        $this->call(FormulaVersionSeeder::class);
+        $this->call(CommissionCalculationSeeder::class);
     }
 }

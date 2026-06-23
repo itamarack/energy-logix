@@ -15,19 +15,17 @@ class CalculationController extends Controller
             ->orderBy('calculated_at', 'desc')
             ->get();
 
-        return response()->json(
-            CommissionCalculationResource::collection($calculations),
-            Response::HTTP_OK
-        );
+        return CommissionCalculationResource::collection($calculations)
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 
     public function show(CommissionCalculation $calculation): JsonResponse
     {
         $calculation->load(['formulaVersion', 'contract']);
 
-        return response()->json(
-            new CommissionCalculationResource($calculation),
-            Response::HTTP_OK
-        );
+        return (new CommissionCalculationResource($calculation))
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 }

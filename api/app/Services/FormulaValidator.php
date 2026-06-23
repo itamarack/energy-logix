@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\FormulaVariable;
+use Illuminate\Support\Facades\Cache;
 
 class FormulaValidator
 {
@@ -13,8 +13,12 @@ class FormulaValidator
 
     public function validate(string $expression, array $variables): void
     {
+        $baseVariables = Cache::remember('formula_variables', 3600, function () {
+            return \App\Models\FormulaVariable::pluck('name')->toArray();
+        });
+
         $intermediateNames = array_map(fn (array $var): string => $var['name'], $variables);
-        $allowedForIntermediates = array_merge(FormulaVariable::values(), $intermediateNames);
+        $allowedForIntermediates = array_merge($baseVariables, $intermediateNames);
 
         foreach ($variables as $variable) {
             $this->evaluator->validate($variable['expression'], $allowedForIntermediates);
@@ -22,7 +26,7 @@ class FormulaValidator
 
         $this->resolver->resolve($variables);
 
-        $allowedForMain = array_merge(FormulaVariable::values(), $intermediateNames);
+        $allowedForMain = array_merge($baseVariables, $intermediateNames);
         $this->evaluator->validate($expression, $allowedForMain);
     }
 }

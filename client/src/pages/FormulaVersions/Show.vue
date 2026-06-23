@@ -28,6 +28,14 @@ const { mutate: activate } = useMutation({
   },
 })
 
+const { mutate: deactivate } = useMutation({
+  mutationFn: () => formulaVersionsApi.deactivate(id),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['formula-versions'] })
+    queryClient.invalidateQueries({ queryKey: ['formula-versions', id] })
+  },
+})
+
 async function runSimulation() {
   isSimulating.value = true
   simulationResult.value = null
@@ -79,8 +87,14 @@ function formatCurrency(value: number) {
               </span>
               {{ formulaVersion.is_active ? 'Active' : 'Inactive' }}
             </span>
-            <button v-if="!formulaVersion.is_active" type="button" class="ml-auto premium-button !px-4 !py-2 !text-[13px]" @click="activate()">
+            <RouterLink :to="FORMULA_VERSION_ROUTES.EDIT(formulaVersion.id)" class="ml-auto premium-button-secondary !px-4 !py-2 !text-[13px]">
+              Edit Formula
+            </RouterLink>
+            <button v-if="!formulaVersion.is_active" type="button" class="premium-button !px-4 !py-2 !text-[13px]" @click="activate()">
               Activate Formula
+            </button>
+            <button v-else type="button" class="premium-button-secondary !px-4 !py-2 !text-[13px]" @click="deactivate()">
+              Deactivate Formula
             </button>
           </div>
         </div>

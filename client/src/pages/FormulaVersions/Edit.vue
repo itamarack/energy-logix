@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useMutation } from '@tanstack/vue-query'
+import { useRouter, useRoute } from 'vue-router'
+import { useFormulaVersion, useUpdateFormulaVersion } from '@/composables/queries/useFormulaVersions'
 import Tribute from 'tributejs'
 import 'tributejs/dist/tribute.css'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { formulaVersionsApi } from '@/api/formulaVersions'
 import { FORMULA_VERSION_ROUTES } from '@/routes/paths/formulaVersionRoutes'
 import { useFormulaVariables } from '@/composables/queries/useFormulaVariables'
 
-document.title = 'New Formula Version — EnergyLogix'
+document.title = 'Edit Formula Version — EnergyLogix'
 
 const router = useRouter()
+const route = useRoute()
+const formulaId = Number(route.params.id)
+
+const { data: formulaData, isLoading } = useFormulaVersion(formulaId)
 
 const form = ref({
   name: '',
@@ -19,6 +22,19 @@ const form = ref({
   expression: '',
   variables: [] as Array<{ name: string; expression: string }>,
 })
+
+watch(
+  formulaData,
+  (newData) => {
+    if (newData) {
+      form.value.name = newData.name
+      form.value.description = newData.description || ''
+      form.value.expression = newData.expression
+      form.value.variables = newData.variables ? [...newData.variables] : []
+    }
+  },
+  { immediate: true }
+)
 
 const errors = ref<Record<string, string>>({})
 const expressionEl = ref<HTMLTextAreaElement | null>(null)
@@ -102,30 +118,34 @@ function removeVariable(index: number) {
   delete varExprEls.value[index]
 }
 
-const { mutate: submit, isPending } = useMutation({
-  mutationFn: () =>
-    formulaVersionsApi.create({
-      name: form.value.name,
-      description: form.value.description || undefined,
-      expression: form.value.expression,
-      variables: form.value.variables,
-    }),
-  onSuccess: () => router.push(FORMULA_VERSION_ROUTES.INDEX),
-  onError: (err: unknown) => {
-    const e = err as Error & { data?: { message?: string; errors?: Record<string, string[]> } }
-    errors.value = {}
-    if (e.data?.errors) {
-      Object.entries(e.data.errors).forEach(([field, msgs]) => {
-        errors.value[field] = msgs[0]
-      })
-    } else if (e.data?.message) {
-      errors.value.expression = e.data.message
-    }
-  },
-})
+const { mutate: submit, isPending } = useUpdateFormulaVersion()
 
 function handleSubmit() {
-  submit()
+  submit(
+    {
+      id: formulaId,
+      data: {
+        name: form.value.name,
+        description: form.value.description || undefined,
+        expression: form.value.expression,
+        variables: form.value.variables,
+      },
+    },
+    {
+      onSuccess: () => router.push(FORMULA_VERSION_ROUTES.INDEX),
+      onError: (err: unknown) => {
+        const e = err as Error & { data?: { message?: string; errors?: Record<string, string[]> } }
+        errors.value = {}
+        if (e.data?.errors) {
+          Object.entries(e.data.errors).forEach(([field, msgs]) => {
+            errors.value[field] = msgs[0]
+          })
+        } else if (e.data?.message) {
+          errors.value.expression = e.data.message
+        }
+      },
+    }
+  )
 }
 </script>
 
@@ -142,12 +162,15 @@ function handleSubmit() {
           </svg>
           Formula Versions
         </RouterLink>
-        <h1 class="mt-1 text-2xl font-semibold text-slate-900">New Formula Version</h1>
+        <h1 class="mt-1 text-2xl font-semibold text-slate-900">Edit Formula Version</h1>
       </div>
     </div>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <form @submit.prevent="handleSubmit">
+      <div v-if="isLoading" class="py-12 text-center text-sm font-medium text-slate-500">
+        Loading formula version...
+      </div>
+      <form v-else @submit.prevent="handleSubmit">
         <div class="lg:grid lg:grid-cols-3 lg:gap-8">
           <div class="lg:col-span-2">
             <div class="premium-card p-6 sm:p-8">
@@ -193,7 +216,7 @@ function handleSubmit() {
                     v-model="form.expression"
                     rows="4"
                     :class="['ide-textarea border-0 rounded-none focus:ring-0', errors.expression ? 'text-red-600' : '']"
-                    placeholder="e.g. AnnualUsage * 0.05 + ContractValue * 0.01"
+                    placeholder="e.g. annual_usage * 0.05 + contract_value * 0.01"
                     spellcheck="false"
                   />
                 </div>

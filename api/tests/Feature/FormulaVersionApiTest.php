@@ -142,6 +142,27 @@ test('POST /api/v1/formula-versions/{id}/activate activates target and deactivat
 });
 
 // ---------------------------------------------------------------------------
+// deactivate
+// ---------------------------------------------------------------------------
+
+test('POST /api/v1/formula-versions/{id}/deactivate deactivates target', function (): void {
+    /** @var FormulaVersion $versionA */
+    $versionA = FormulaVersion::factory()->create(['is_active' => true]);
+
+    $response = $this->postJson("/api/v1/formula-versions/{$versionA->id}/deactivate");
+
+    $response->assertOk();
+    $response->assertJsonPath('data.id', $versionA->id);
+    $response->assertJsonPath('data.is_active', false);
+
+    // Refresh from DB
+    $versionA->refresh();
+
+    expect($versionA->is_active)->toBeFalse();
+    expect(FormulaVersion::where('is_active', true)->count())->toBe(0);
+});
+
+// ---------------------------------------------------------------------------
 // simulate — returns all four keys, commission_calculations count unchanged
 // ---------------------------------------------------------------------------
 
@@ -167,12 +188,41 @@ test('POST /api/v1/formula-versions/{id}/simulate returns simulation result and 
 
     $response->assertOk();
     $response->assertJsonStructure([
-        'affected_contract_count',
-        'current_total_commission',
-        'new_total_commission',
-        'difference',
+        'data' => [
+            'affected_contract_count',
+            'current_total_commission',
+            'new_total_commission',
+            'difference',
+        ]
     ]);
 
     // Simulation must not have persisted any records
     expect(CommissionCalculation::count())->toBe($beforeCount);
+});
+
+// ---------------------------------------------------------------------------
+// update
+// ---------------------------------------------------------------------------
+
+test('PUT /api/v1/formula-versions/{id} updates the formula and returns 200', function (): void {
+    $version = FormulaVersion::factory()->create([
+        'name' => 'Old Name',
+        'expression' => 'annual_usage * 1',
+    ]);
+
+    $payload = [
+        'name' => 'New Name',
+        'expression' => 'annual_usage * 2',
+        'variables' => [],
+    ];
+
+    $response = $this->putJson("/api/v1/formula-versions/{$version->id}", $payload);
+
+    $response->assertOk();
+    $response->assertJsonPath('data.name', 'New Name');
+    $response->assertJsonPath('data.expression', 'annual_usage * 2');
+
+    $version->refresh();
+    expect($version->name)->toBe('New Name');
+    expect($version->expression)->toBe('annual_usage * 2');
 });

@@ -39,7 +39,7 @@ test('GET /api/v1/calculations returns calculations ordered by calculated_at des
 
     $response = $this->getJson('/api/v1/calculations');
 
-    $response->assertOk();
+    $response->dump();$response->assertOk();
 
     $records = $response->json('data');
     expect($records)->toHaveCount(3);
@@ -71,7 +71,7 @@ test('GET /api/v1/calculations/{id} returns the full calculation record', functi
 
     $response = $this->getJson("/api/v1/calculations/{$calculation->id}");
 
-    $response->assertOk();
+    $response->dump();$response->assertOk();
 
     $data = $response->json('data');
 

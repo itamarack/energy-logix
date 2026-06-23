@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\CommissionCalculationData;
-use App\Enums\FormulaVariable;
+
 use App\Models\CommissionCalculation;
 use App\Models\Contract;
 use App\Models\FormulaVersion;
@@ -17,7 +17,11 @@ class CommissionCalculator
 
     public function calculate(FormulaVersion $formula, Contract $contract): CommissionCalculationData
     {
-        $inputValues = $contract->only(FormulaVariable::values());        
+        $baseVariables = \Illuminate\Support\Facades\Cache::remember('formula_variables', 3600, function () {
+            return \App\Models\FormulaVariable::pluck('name')->toArray();
+        });
+        
+        $inputValues = $contract->only($baseVariables);        
         $variableMap = $inputValues;
 
         $orderedNames = $this->resolver->resolve($formula->variables);

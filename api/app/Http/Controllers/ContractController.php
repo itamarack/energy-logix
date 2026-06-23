@@ -18,13 +18,12 @@ class ContractController extends Controller
 
     public function index(): JsonResponse
     {
-        return response()->json(
-            ContractResource::collection(Contract::all()),
-            Response::HTTP_OK
-        );
+        return ContractResource::collection(Contract::all())
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 
-    public function calculate(Contract $contract): CommissionCalculationResource|JsonResponse
+    public function calculate(Contract $contract): JsonResponse
     {
         $activeFormula = FormulaVersion::query()->where('is_active', true)->first();
 
@@ -39,6 +38,8 @@ class ContractController extends Controller
 
         $calculation->load(['formulaVersion', 'contract']);
 
-        return new CommissionCalculationResource($calculation);
+        return (new CommissionCalculationResource($calculation))
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 }

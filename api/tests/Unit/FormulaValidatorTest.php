@@ -7,10 +7,15 @@ use App\Services\DependencyResolver;
 use App\Services\FormulaEvaluator;
 use App\Services\FormulaValidator;
 
+uses(Tests\TestCase::class, \Illuminate\Foundation\Testing\RefreshDatabase::class);
+
 /**
  * @phpstan-type Variable array{name: string, expression: string}
  */
 beforeEach(function (): void {
+    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
+    \Illuminate\Support\Facades\Cache::flush();
+    
     $evaluator = new FormulaEvaluator(new \Symfony\Component\ExpressionLanguage\ExpressionLanguage());
     $this->validator = new FormulaValidator($evaluator, new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer()));
 });

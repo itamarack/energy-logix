@@ -5,34 +5,36 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\FormulaVersionController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('v1')->group(function (): void {
+Route::prefix('v1')->name('api.')->group(function (): void {
+    // ---------------------------------------------------------
+    // Formula Variables (Base)
+    // ---------------------------------------------------------
+    Route::prefix('formula-variables')->group(function () {
+        Route::get('/', [\App\Http\Controllers\FormulaVariableController::class, 'index'])->name('formula-variables.index');
+    });
+
+    // ---------------------------------------------------------
     // Formula Versions
-    Route::get('/formula-versions', [FormulaVersionController::class, 'index'])
-        ->name('api.formula-versions.index');
+    // ---------------------------------------------------------
+    Route::prefix('formula-versions')->group(function () {
+        Route::get('/', [FormulaVersionController::class, 'index'])->name('formula-versions.index');
+        Route::post('/', [FormulaVersionController::class, 'store'])->name('formula-versions.store');
+        Route::put('/{formulaVersion}', [FormulaVersionController::class, 'update'])->name('formula-versions.update');
+        Route::get('/{formulaVersion}', [FormulaVersionController::class, 'show'])->name('formula-versions.show');
+        
+        Route::post('/{formulaVersion}/activate', [FormulaVersionController::class, 'activate'])->name('formula-versions.activate');
+        Route::post('/{formulaVersion}/deactivate', [FormulaVersionController::class, 'deactivate'])->name('formula-versions.deactivate');
+        Route::post('/{formulaVersion}/simulate', [FormulaVersionController::class, 'simulate'])->name('formula-versions.simulate');
+    });
 
-    Route::post('/formula-versions', [FormulaVersionController::class, 'store'])
-        ->name('api.formula-versions.store');
+    Route::prefix('contracts')->group(function () {
+        Route::get('/', [ContractController::class, 'index'])->name('contracts.index');
+        Route::post('/{contract}/calculate', [ContractController::class, 'calculate'])->name('contracts.calculate');
+    });
 
-    Route::get('/formula-versions/{formulaVersion}', [FormulaVersionController::class, 'show'])
-        ->name('api.formula-versions.show');
+    Route::prefix('calculations')->group(function () {
+        Route::get('/', [CalculationController::class, 'index'])->name('calculations.index');
+        Route::get('/{calculation}', [CalculationController::class, 'show'])->name('calculations.show');
+    });
 
-    Route::post('/formula-versions/{formulaVersion}/activate', [FormulaVersionController::class, 'activate'])
-        ->name('api.formula-versions.activate');
-
-    Route::post('/formula-versions/{formulaVersion}/simulate', [FormulaVersionController::class, 'simulate'])
-        ->name('api.formula-versions.simulate');
-
-    // Contracts
-    Route::get('/contracts', [ContractController::class, 'index'])
-        ->name('api.contracts.index');
-
-    Route::post('/contracts/{contract}/calculate', [ContractController::class, 'calculate'])
-        ->name('api.contracts.calculate');
-
-    // Calculations (audit trail)
-    Route::get('/calculations', [CalculationController::class, 'index'])
-        ->name('api.calculations.index');
-
-    Route::get('/calculations/{calculation}', [CalculationController::class, 'show'])
-        ->name('api.calculations.show');
 });

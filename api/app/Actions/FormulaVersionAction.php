@@ -26,6 +26,16 @@ class FormulaVersionAction
         return $this;
     }
 
+    public function update(FormulaVersion $formulaVersion, FormulaVersionData $data): self
+    {
+        $this->operation = function () use ($formulaVersion, $data) {
+            $formulaVersion->fill($data->toArray())->save();
+            return $formulaVersion->fresh();
+        };
+
+        return $this;
+    }
+
     public function activate(FormulaVersion $formulaVersion): self
     {
         $this->operation = function () use ($formulaVersion) {
@@ -36,6 +46,16 @@ class FormulaVersionAction
             DB::afterCommit(function () use ($formulaVersion) {
                 FormulaVersionActivated::dispatch($formulaVersion);
             });
+        };
+
+        return $this;
+    }
+
+    public function deactivate(FormulaVersion $formulaVersion): self
+    {
+        $this->operation = function () use ($formulaVersion) {
+            $formulaVersion->is_active = false;
+            $formulaVersion->save();
         };
 
         return $this;

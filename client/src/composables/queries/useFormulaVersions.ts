@@ -30,10 +30,32 @@ export function useCreateFormulaVersion() {
   })
 }
 
+export function useUpdateFormulaVersion() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Parameters<typeof formulaVersionsApi.update>[1] }) =>
+      formulaVersionsApi.update(id, data),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: formulaVersionKeys.all })
+      queryClient.invalidateQueries({ queryKey: formulaVersionKeys.detail(data.id) })
+    },
+  })
+}
+
 export function useActivateFormulaVersion() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: formulaVersionsApi.activate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: formulaVersionKeys.all })
+    },
+  })
+}
+
+export function useDeactivateFormulaVersion() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: formulaVersionsApi.deactivate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: formulaVersionKeys.all })
     },

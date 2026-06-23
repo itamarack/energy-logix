@@ -7,10 +7,16 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        $this->app->bind(ExpressionLanguage::class, function () {
+            return new ExpressionLanguage();
+        });
+    }
 
     public function boot(): void
     {

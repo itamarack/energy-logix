@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\FormulaVariable;
+
 use App\Exceptions\CircularDependencyException;
 use Symfony\Component\ExpressionLanguage\Lexer;
 use Symfony\Component\ExpressionLanguage\Token;
@@ -68,7 +68,9 @@ class DependencyResolver
             return [];
         }
 
-        $baseVariables = FormulaVariable::values();
+        $baseVariables = \Illuminate\Support\Facades\Cache::remember('formula_variables', 3600, function () {
+            return \App\Models\FormulaVariable::pluck('name')->toArray();
+        });
 
         return collect($tokens)
             ->map(fn(mixed $value): string => (string) $value)

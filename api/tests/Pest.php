@@ -19,6 +19,11 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
+pest()->beforeEach(function () {
+    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
+    \Illuminate\Support\Facades\Cache::flush();
+})->in('Feature');
+
 // Seed a FormulaVersion with a predictable first ID so that BugConditionExplorationTest E
 // can resolve /api/v1/formula-versions/1/simulate via route model binding.
 pest()

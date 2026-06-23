@@ -3,12 +3,17 @@
 use App\Exceptions\CircularDependencyException;
 use App\Services\DependencyResolver;
 use App\Services\FormulaEvaluator;
+use Symfony\Component\ExpressionLanguage\Lexer;
+
+uses(Tests\TestCase::class, \Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 /**
  * @phpstan-type Variable array{name: string, expression: string}
  */
 beforeEach(function (): void {
-    $this->resolver = new DependencyResolver(new \Symfony\Component\ExpressionLanguage\Lexer());
+    $this->seed(\Database\Seeders\FormulaVariableSeeder::class);
+    \Illuminate\Support\Facades\Cache::flush();
+    $this->resolver = new DependencyResolver(new Lexer());
 });
 
 // -------------------------------------------------------------------------
