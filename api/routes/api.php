@@ -29,6 +29,8 @@ Route::prefix('v1')->name('api.')->group(function (): void {
 
     Route::prefix('contracts')->group(function () {
         Route::get('/', [ContractController::class, 'index'])->name('contracts.index');
+        Route::get('/{contract}', [ContractController::class, 'show'])->name('contracts.show');
+        Route::get('/{contract}/calculations', [ContractController::class, 'calculations'])->name('contracts.calculations');
         Route::post('/{contract}/calculate', [ContractController::class, 'calculate'])->name('contracts.calculate');
     });
 

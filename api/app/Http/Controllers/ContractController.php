@@ -23,6 +23,27 @@ class ContractController extends Controller
             ->setStatusCode(Response::HTTP_OK);
     }
 
+    public function show(Contract $contract): JsonResponse
+    {
+        $contract->load('latestCommission');
+
+        return (new ContractResource($contract))
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
+    }
+
+    public function calculations(Contract $contract): JsonResponse
+    {
+        $calculations = $contract->commissionCalculations()
+            ->with('formulaVersion')
+            ->orderBy('calculated_at', 'desc')
+            ->paginate(10);
+
+        return CommissionCalculationResource::collection($calculations)
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
+    }
+
     public function calculate(Contract $contract): JsonResponse
     {
         $activeFormula = FormulaVersion::query()->where('is_active', true)->first();
