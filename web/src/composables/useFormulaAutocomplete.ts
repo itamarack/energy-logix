@@ -88,8 +88,10 @@ export function useFormulaAutocomplete(
   )
 
   return {
-    expressionEl,
-    varExprEls,
+    refs: {
+      expressionEl,
+      varExprEls,
+    },
     reattachTribute,
     isVariablesLoading,
     baseVariables,

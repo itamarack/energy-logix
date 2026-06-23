@@ -31,11 +31,11 @@ watch(
   { immediate: true }
 )
 
-const formulaAutocomplete = useFormulaAutocomplete(() => form.value.variables)
+const { refs: autocompleteRefs, isVariablesLoading, baseVariables } = useFormulaAutocomplete(() => form.value.variables)
 
 function handleRemoveVariable(index: number) {
   removeVariable(index)
-  delete formulaAutocomplete.varExprEls.value[index]
+  delete autocompleteRefs.varExprEls.value[index]
 }
 
 const { mutate: submit, isPending } = useUpdateFormulaVersion()
@@ -118,7 +118,7 @@ function handleSubmit() {
                   </div>
                   <textarea
                     id="expression"
-                    :ref="(el) => { formulaAutocomplete.expressionEl.value = el as HTMLTextAreaElement }"
+                    :ref="(el) => { autocompleteRefs.expressionEl.value = el as HTMLTextAreaElement }"
                     v-model="form.expression"
                     rows="4"
                     :class="['ide-textarea border-0 rounded-none focus:ring-0', errors.expression ? 'text-red-600' : '']"
@@ -158,7 +158,7 @@ function handleSubmit() {
                         <input
                           v-model="variable.expression"
                           type="text"
-                          :ref="el => { formulaAutocomplete.varExprEls.value[index] = el as HTMLInputElement }"
+                          :ref="el => { autocompleteRefs.varExprEls.value[index] = el as HTMLInputElement }"
                           class="ide-textarea !py-2 !text-[13px]"
                           placeholder="Expression"
                           spellcheck="false"
@@ -195,9 +195,9 @@ function handleSubmit() {
             <div class="premium-card sticky top-24 p-6">
               <h2 class="mb-1 text-[13px] font-bold uppercase tracking-widest text-slate-500">Available Variables</h2>
               <p class="mb-6 text-[13px] text-slate-400">Type <strong class="text-indigo-500">@</strong> in any expression field to insert a variable.</p>
-              <div v-if="formulaAutocomplete.isVariablesLoading" class="mt-4 text-sm text-slate-500">Loading available variables...</div>
+              <div v-if="isVariablesLoading" class="mt-4 text-sm text-slate-500">Loading available variables...</div>
               <ul v-else class="space-y-5">
-                <li v-for="v in formulaAutocomplete.baseVariables" :key="v.name" class="flex items-start gap-4">
+                <li v-for="v in baseVariables" :key="v.name" class="flex items-start gap-4">
                   <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 ring-1 ring-indigo-500/20">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </div>
